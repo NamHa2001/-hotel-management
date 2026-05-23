@@ -1,0 +1,96 @@
+<div class="heritage-report-wrapper">
+    <!-- Header sang trọng -->
+    <header class="report-header-premium">
+        <div class="brand-title">
+            <h1><i class="fas fa-chart-pie"></i> Báo Cáo Tài Chính</h1>
+            <p>Hệ thống quản trị Cinnamon Hotel Luxury</p>
+        </div>
+        <div class="report-timestamp">
+            <span class="luxury-badge">Phát hành: {{ today | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+    </header>
+
+    <!-- Thanh công cụ & Bộ lọc -->
+    <div class="report-toolbar-premium">
+        <div class="filter-controls">
+            <div class="luxury-input-group">
+                <label>Từ ngày</label>
+                <input type="date" [(ngModel)]="filter.startDate">
+            </div>
+            <div class="luxury-input-group">
+                <label>Đến ngày</label>
+                <input type="date" [(ngModel)]="filter.endDate">
+            </div>
+            <button class="btn-heritage-action" (click)="onFilter()">
+                <i class="fas fa-sync-alt"></i> Cập nhật dữ liệu
+            </button>
+        </div>
+        <div class="export-actions">
+            <button class="btn-heritage-outline" (click)="printReport()">
+                <i class="fas fa-print"></i> Xuất bản (PDF)
+            </button>
+        </div>
+    </div>
+
+    <!-- Thông tin khoảng thời gian -->
+    <div class="data-range-indicator">
+        <i class="fas fa-history"></i> Chu kỳ báo cáo: <span>{{ displayRange }}</span>
+    </div>
+
+    <!-- Hệ thống thẻ KPI -->
+    <div class="kpi-grid-premium">
+        <div class="kpi-card-luxury">
+            <div class="kpi-icon gold"><i class="fas fa-door-open"></i></div>
+            <div class="kpi-content">
+                <span class="kpi-label">Doanh thu lưu trú</span>
+                <span class="kpi-value">{{ (stats?.roomRevenue || 0) | number }}đ</span>
+            </div>
+        </div>
+        <div class="kpi-card-luxury">
+            <div class="kpi-icon gold"><i class="fas fa-wine-glass-alt"></i></div>
+            <div class="kpi-content">
+                <span class="kpi-label">Doanh thu dịch vụ</span>
+                <span class="kpi-value">{{ (stats?.serviceRevenue || 0) | number }}đ</span>
+            </div>
+        </div>
+        <div class="kpi-card-luxury highlight-navy">
+            <div class="kpi-icon gold-filled"><i class="fas fa-coins"></i></div>
+            <div class="kpi-content">
+                <span class="kpi-label">Tổng doanh thu thực tế</span>
+                <span class="kpi-value">{{ (stats?.totalRevenue || 0) | number }}đ</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout chính: Biểu đồ & Top Service -->
+    <div class="main-content-grid">
+        <section class="chart-section-premium">
+            <div class="section-card">
+                <h3><i class="fas fa-chart-line"></i> Xu hướng tăng trưởng doanh thu</h3>
+                <div class="chart-container-luxury">
+                    <canvas #revenueChart></canvas>
+                </div>
+            </div>
+        </section>
+
+        <aside class="sidebar-section-premium">
+            <div class="section-card">
+                <h3><i class="fas fa-award"></i> Dịch vụ tiêu biểu</h3>
+                <div class="top-service-list">
+                    <div class="service-entry" *ngFor="let s of topServices">
+                        <div class="entry-meta">
+                            <strong>{{ s.serviceName ?? s.ServiceName }}</strong>
+                            <small>{{ s.usageCount ?? s.UsageCount }} lượt bán</small>
+                        </div>
+                        <div class="entry-price">
+                            {{ (s.revenue ?? s.Revenue) | number }}đ
+                        </div>
+                    </div>
+                    <div *ngIf="!topServices?.length" class="empty-state-luxury">
+                        Đang tổng hợp dữ liệu dịch vụ...
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>

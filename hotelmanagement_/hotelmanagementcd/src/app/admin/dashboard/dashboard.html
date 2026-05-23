@@ -1,0 +1,102 @@
+<div class="dashboard-body">
+  <div class="stats-grid">
+    <!-- Thẻ Doanh Thu -->
+    <div class="card stat-card">
+      <div class="stat-info">
+        <p class="stat-label">Doanh thu tháng này</p>
+        <h2 class="stat-value">{{ (stats?.doanhThuThang || 0) | number }}đ</h2>
+        <span class="stat-insight text-gold"><i class="fas fa-crown"></i> Mục tiêu: 100tr</span>
+      </div>
+      <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
+    </div>
+
+    <!-- Thẻ Khách Hàng -->
+    <div class="card stat-card">
+      <div class="stat-info">
+        <p class="stat-label">Tổng khách lưu trú</p>
+        <h2 class="stat-value">{{ (stats?.tongKhachHang || 0) | number }}</h2>
+        <span class="stat-insight"><i class="fas fa-users"></i> Khách hàng thân thiết</span>
+      </div>
+      <div class="stat-icon green"><i class="fas fa-users"></i></div>
+    </div>
+
+    <!-- Thẻ Đơn Đặt Phòng -->
+    <div class="card stat-card">
+      <div class="stat-info">
+        <p class="stat-label">Tổng đơn đặt phòng</p>
+        <h2 class="stat-value">{{ (stats?.tongDonDatPhong || 0) | number }}</h2>
+        <span class="stat-insight text-gold">Tỷ lệ chuyển đổi: Cao</span>
+      </div>
+      <div class="stat-icon purple"><i class="fas fa-file-invoice"></i></div>
+    </div>
+
+    <!-- Thẻ Check-in -->
+    <div class="card stat-card">
+      <div class="stat-info">
+        <p class="stat-label">Lượt Check-in tuần</p>
+        <h2 class="stat-value">{{ (stats?.luotCheckInTuan || 0) | number }}</h2>
+        <span class="stat-insight"><i class="fas fa-clock"></i> Cập nhật trực tuyến</span>
+      </div>
+      <div class="stat-icon orange"><i class="fas fa-running"></i></div>
+    </div>
+  </div>
+
+  <div class="revenue-row">
+    <div class="card chart-full-card">
+      <div class="card-header">
+        <h4 class="card-title">Biểu đồ doanh thu theo ngày</h4>
+        <span class="badge">7 ngày gần nhất</span>
+      </div>
+      <div class="chart-main-container">
+        <canvas *ngIf="isBrowser" baseChart 
+          [data]="lineChartData" 
+          [options]="lineChartOptions" 
+          [type]="'line'">
+        </canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="card chart-card">
+      <h4 class="card-title">Tỉ lệ sử dụng phòng</h4>
+      <div class="chart-main-container">
+        <canvas *ngIf="isBrowser" baseChart 
+          [data]="roomUsageData" 
+          [options]="pieOptions" 
+          [type]="'pie'">
+        </canvas>
+      </div>
+      <div class="room-summary">
+        <span>Tổng phòng: <strong>{{ stats?.tongPhong }}</strong></span>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h4 class="card-title">Hiệu suất vận hành</h4>
+      <div class="kpi-display">
+        <div class="kpi-circle-heritage">
+          <span class="kpi-num">{{ ((stats?.phongDangThue / stats?.tongPhong) * 100) || 0 | number:'1.0-1' }}%</span>
+          <p>Công suất</p>
+        </div>
+        <div class="kpi-details-heritage">
+          <div class="kpi-item">
+            <span class="dot trống"></span>
+            <span class="k-label">Phòng trống:</span>
+            <span class="k-val">{{ stats?.phongTrong || 0 }}</span>
+          </div>
+          <div class="kpi-item">
+            <span class="dot đang-ở"></span>
+            <span class="k-label">Đang ở:</span>
+            <span class="k-val">{{ stats?.phongDangThue || 0 }}</span>
+          </div>
+          <div class="kpi-item">
+            <span class="dot đang-dọn"></span>
+            <span class="k-label">Đang dọn:</span>
+            <span class="k-val">{{ stats?.phongDangDon || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

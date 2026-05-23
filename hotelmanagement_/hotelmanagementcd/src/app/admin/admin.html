@@ -1,0 +1,107 @@
+<!-- Chú thích: Tái cấu trúc Layout theo phong cách Modern Glassmorphism, tối ưu hóa không gian hiển thị và độ tương phản sáng/tối -->
+<div class="admin-wrapper-modern" *ngIf="currentUser">
+  <aside class="sidebar-glass">
+    <div class="sidebar-header-modern">
+      <div class="logo-icon-circle">
+        <i class="fa-solid fa-hotel"></i>
+      </div>
+      <div class="brand-info-modern">
+        <span class="brand-main">NAMHA</span>
+        <span class="brand-sub">HOTEL LUXURY</span>
+      </div>
+    </div>
+
+    <nav class="menu-scroll">
+      <!-- NHÓM 1: TỔNG QUAN -->
+      <div class="nav-group">
+        <p class="menu-label">VẬN HÀNH</p>
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-chart-pie"></i> <span>Tổng quan</span>
+        </a>
+      </div>
+
+      <!-- NHÓM 2: QUẢN LÝ PHÒNG -->
+      <div class="nav-group">
+        <p class="menu-label">QUẢN LÝ PHÒNG</p>
+        <a routerLink="/admin/rooms" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-layer-group"></i> <span>Sơ đồ phòng</span>
+        </a>
+        <a routerLink="/admin/booking" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-calendar-check"></i> <span>Đặt phòng (Grid)</span>
+        </a>
+      </div>
+
+      <!-- NHÓM 3: TÀI CHÍNH & DỮ LIỆU -->
+      <div class="nav-group">
+        <p class="menu-label">TÀI CHÍNH & KHÁCH HÀNG</p>
+        <a routerLink="/admin/checkout" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-cash-register"></i> <span>Quầy thanh toán</span>
+        </a>
+        <a routerLink="/admin/invoice-history" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-history"></i> <span>Lịch sử hóa đơn</span>
+        </a>
+        <a routerLink="/admin/customers" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-user-group"></i> <span>Hồ sơ khách hàng</span>
+        </a>
+      </div>
+
+      <!-- NHÓM 4: HỆ THỐNG (Chỉ dành cho Admin) -->
+      <div class="nav-group" *ngIf="currentUser?.userRole === 'Admin'">
+        <p class="menu-label">HỆ THỐNG</p>
+        <a routerLink="/admin/service" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-concierge-bell"></i> <span>Quản lý dịch vụ</span>
+        </a>
+        <a routerLink="/admin/reports" routerLinkActive="active" class="menu-item">
+          <i class="fa-solid fa-file-invoice-dollar"></i> <span>Báo cáo doanh thu</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="logout-zone">
+      <button class="btn-logout" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất hệ thống
+      </button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="top-header">
+      <div class="breadcrumb">
+        <span class="root">Cinnamon </span>
+        <i class="fa-solid fa-chevron-right separator"></i>
+        <!-- Tạm thời để text tĩnh hoặc bạn có thể bổ sung currentPageName sau -->
+        <span class="active-page"> Quản trị hệ thống</span>
+      </div>
+
+      <div class="header-right">
+        <div class="notification-icon">
+          <i class="fa-regular fa-bell"></i>
+          <span class="badge">3</span>
+        </div>
+        <div class="user-profile">
+          <div class="user-text">
+            <span class="welcome">Chào mừng,</span>
+            <span class="user-name">{{ currentUser.fullName || 'Admin' }}</span>
+          </div>
+          <div class="avatar-box">
+             <!-- Lấy chữ cái đầu của tên làm avatar như code cũ của bạn -->
+             {{ (currentUser.fullName || 'A').charAt(0) }}
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <section class="router-body">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>
+
+<!-- Loader hiển thị khi chưa có currentUser (Tránh nháy trang) -->
+<!-- Chú thích: Cơ chế dự phòng (Fallback) đảm bảo người dùng không bị kẹt tại màn hình chờ nếu phiên đăng nhập bị gián đoạn -->
+<div *ngIf="!currentUser" class="loading-overlay-modern" style="background: rgba(30, 41, 59, 0.9);">
+  <div class="loader-container">
+      <div class="loader-circle"></div>
+      <p>Đang đồng bộ dữ liệu Cinnamon Hotel...</p>
+  </div>
+</div>

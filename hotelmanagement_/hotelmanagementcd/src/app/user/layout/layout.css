@@ -1,0 +1,243 @@
+/* ============================================================
+   💎 NAMHA HOTEL - MASTER LAYOUT CSS (LUXURY LIGHT STYLE)
+   ============================================================ */
+
+/* --- TỔNG THỂ --- */
+.user-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #F8FAFC; /* Nền chính off-white */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* --- NAVBAR CAO CẤP (GLASSMORPHISM) --- */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 6%;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px); /* Hiệu ứng kính mờ */
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #E2E8F0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+/* --- LOGO BRANDING --- */
+.nav-brand {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1A1C1E; /* Chữ logo đậm */
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.logo-sub {
+    font-size: 0.65rem;
+    color: #C5A059; /* Màu vàng đồng thương hiệu */
+    font-weight: 700;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- MENU ĐIỀU HƯỚNG --- */
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+    align-items: center;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: #4A4A4A;
+    font-weight: 600;
+    font-size: 0.95rem;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+/* Hiệu ứng gạch chân khi hover và active */
+.nav-links li a::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #38BDF8; /* Màu Sky Blue */
+    transition: width 0.3s ease;
+}
+
+.nav-links li a:hover, 
+.nav-links li a.active {
+    color: #38BDF8;
+}
+
+.nav-links li a:hover::after, 
+.nav-links li a.active::after {
+    width: 100%;
+}
+
+/* --- KHU VỰC HÀNH ĐỘNG (ACTIONS) --- */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Nút lịch sử đặt phòng */
+.btn-my-booking {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #64748B;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-my-booking:hover {
+    color: #38BDF8;
+    border-color: #38BDF8;
+    background: #F0F9FF;
+    transform: rotate(-15deg);
+}
+
+/* Nút đăng nhập */
+.btn-login-user {
+    background-color: #38BDF8;
+    color: #FFFFFF;
+    border: none;
+    padding: 11px 26px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-login-user:hover {
+    background-color: #0EA5E9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+}
+
+/* --- PROFILE KHI ĐÃ ĐĂNG NHẬP --- */
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #FFFFFF;
+    padding: 6px 6px 6px 18px;
+    border-radius: 50px;
+    border: 1px solid #F1EFE9;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.welcome-text {
+    font-size: 0.85rem;
+    color: #64748B;
+}
+
+.welcome-text strong {
+    color: #1A1C1E;
+    font-weight: 700;
+}
+
+.btn-logout-small {
+    background: #FFF1F2; /* Nền đỏ nhạt */
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #F43F5E; /* Màu Danger */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-logout-small:hover {
+    background: #F43F5E;
+    color: #FFFFFF;
+    transform: scale(1.1);
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    flex: 1; /* Đẩy footer xuống dưới cùng */
+}
+
+/* --- FOOTER SÁCH SẼ & CAO CẤP --- */
+.footer-user {
+    background-color: #FFFFFF;
+    color: #4A4A4A;
+    padding: 70px 6% 30px;
+    border-top: 1px solid #E2E8F0;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    margin-bottom: 50px;
+}
+
+.footer-info h3 {
+    color: #1A1C1E;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.footer-info p {
+    color: #64748B;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+.footer-contact p {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #4A4A4A;
+    font-weight: 500;
+}
+
+.footer-contact i {
+    color: #C5A059; /* Icon màu vàng đồng */
+    width: 20px;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid #F1F5F9;
+    padding-top: 30px;
+    font-size: 0.8rem;
+    color: #94A3B8;
+    font-weight: 500;
+}

@@ -1,0 +1,32 @@
+<div class="detail-container" *ngIf="roomData">
+  <div class="detail-header">
+    <button (click)="goBack()" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Quay lại sơ đồ
+    </button>
+    <h2>Phòng {{ roomData.roomNumber }} - {{ roomData.roomType?.typeName }}</h2>
+  </div>
+
+  <div class="detail-content">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card-info">
+          <h3><i class="fas fa-user"></i> Khách hàng</h3>
+          <div *ngIf="roomData.roomStatus === 'Occupied'; else emptyState">
+             <p><strong>Tên:</strong> {{ roomData.bookings?.[roomData.bookings!.length - 1]?.customer?.fullName }}</p>
+             <p><strong>Vào lúc:</strong> {{ roomData.bookings?.[roomData.bookings!.length - 1]?.checkInTime | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <ng-template #emptyState>
+            <p>Phòng hiện đang trống</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="card-services">
+          <h3><i class="fas fa-utensils"></i> Dịch vụ & Hóa đơn</h3>
+          <p>Phần này chúng ta sẽ làm tiếp ở bước sau...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

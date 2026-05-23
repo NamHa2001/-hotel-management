@@ -1,0 +1,198 @@
+<div class="admin-wrapper">
+    <!-- Header Thống kê nhanh -->
+    <header class="page-header">
+        <div class="header-title">
+            <h1><i class="fa-solid fa-file-invoice-dollar"></i> Quản Lý Hóa Đơn</h1>
+            <p>Theo dõi doanh thu và lịch sử giao dịch chi tiết</p>
+        </div>
+        <div class="quick-stats">
+            <div class="stat-item">
+                <span class="label">Tổng doanh thu (tháng này)</span>
+                <span class="value">{{ getTotalRevenue() | number }}đ</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">Hóa đơn trong danh sách</span>
+                <span class="value">{{ filteredInvoices.length }}</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Thanh công cụ tìm kiếm & Bộ lọc (Hệ thống Multi-Filter) -->
+    <section class="filter-card">
+        <div class="filter-row">
+            <div class="search-group">
+                <label>Tìm kiếm thông minh</label>
+                <div class="input-with-icon">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" [(ngModel)]="searchText" (input)="applyFilter()" placeholder="Tên khách hoặc mã HĐ...">
+                </div>
+            </div>
+            
+            <div class="date-group">
+                <label>Khoảng thời gian</label>
+                <div class="date-inputs">
+                    <input type="date" [(ngModel)]="startDate">
+<span>đến</span>
+<input type="date" [(ngModel)]="endDate">
+                </div>
+            </div>
+
+            <div class="select-group">
+                <label>PT Thanh toán</label>
+                <select [(ngModel)]="selectedMethod" (change)="applyFilter()">
+    <option value="">Tất cả</option>
+    <option value="Tiền mặt">Tiền mặt</option>
+    <option value="Chuyển khoản">Chuyển khoản</option>
+    <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+</select>
+            </div>
+
+            <div class="action-group">
+                <button class="btn-filter" (click)="onFilterByDate()">
+    <i class="fa-solid fa-filter"></i> Lọc dữ liệu
+</button>
+                <button class="btn-export" (click)="exportToExcel()">
+    <i class="fa-solid fa-file-excel"></i> Xuất báo cáo
+</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bảng danh sách hóa đơn -->
+    <section class="table-card">
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Ngày xuất</th>
+                    <th>Khách hàng</th>
+                    <th>Phòng</th>
+                    <th>Tổng tiền</th>
+                    <th>Phương thức</th>
+                    <th>Nhân viên</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let inv of filteredInvoices">
+    <td>#INV-{{ inv.invoiceID }}</td>
+    <td>{{ inv.invoiceDate | date:'dd/MM/yyyy HH:mm' }}</td>
+    <td>
+        <!-- Báo cáo: Hiển thị tên đầy đủ khách hàng từ đối tượng liên kết Booking -> Customer -->
+        <strong>{{ inv.booking?.customer?.fullName || 'Khách lẻ' }}</strong>
+    </td>
+    <td>
+        <!-- Báo cáo: Hiển thị số phòng từ đối tượng liên kết Booking -> Room -->
+        <span class="room-no">{{ inv.booking?.room?.roomNumber || 'N/A' }}</span>
+    </td>
+    <td class="amount">{{ inv.totalAmount | number }}đ</td>
+    <td>
+        <span class="badge" [ngClass]="{'cash': inv.paymentMethod === 'Tiền mặt', 'transfer': inv.paymentMethod === 'Chuyển khoản'}">
+            {{ inv.paymentMethod }}
+        </span>
+    </td>
+    <td>{{ inv.staffName }}</td>
+    <td>
+        <button class="btn-view" (click)="viewDetail(inv.invoiceID)"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn-print"><i class="fa-solid fa-print"></i></button>
+    </td>
+</tr>
+            </tbody>
+        </table>
+        
+        <!-- Phân trang -->
+        <div class="pagination">
+            <span>Hiển thị 1 - 10 trên 150 hóa đơn</span>
+            <div class="pages">
+                <button disabled><i class="fas fa-chevron-left"></i></button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL CHI TIẾT HÓA ĐƠN - PHONG CÁCH HIỆN ĐẠI -->
+    <div class="overlay" *ngIf="showDetailModal" (click)="showDetailModal = false">
+        <div class="modal animate-pop" (click)="$event.stopPropagation()">
+            <div class="modal-header"> 
+                <div class="header-info">
+                    <h3>CHI TIẾT HÓA ĐƠN</h3>
+                    <span class="invoice-tag">#INV-{{ selectedInvoiceDetail?.invoiceInfo?.invoiceID }}</span>
+                </div>
+                <button class="close-x" (click)="showDetailModal = false">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Thông tin chung -->
+                <div class="info-grid">
+                    <div class="info-group">
+                        <label><i class="fa-solid fa-user"></i> Khách hàng</label>
+                        <p>{{ selectedInvoiceDetail?.invoiceInfo?.booking?.customer?.fullName || 'Khách lẻ' }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label><i class="fa-solid fa-door-open"></i> Số phòng</label>
+                        <p class="room-highlight">{{ selectedInvoiceDetail?.invoiceInfo?.booking?.room?.roomNumber || 'N/A' }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label><i class="fa-solid fa-calendar-day"></i> Ngày xuất</label>
+                        <p>{{ selectedInvoiceDetail?.invoiceInfo?.invoiceDate | date:'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label><i class="fa-solid fa-user-tie"></i> Nhân viên</label>
+                        <p>{{ selectedInvoiceDetail?.invoiceInfo?.staffName }}</p>
+                    </div>
+                </div>
+
+                <!-- Bảng dịch vụ -->
+                <div class="service-section">
+                    <h4 class="service-title">Dịch vụ đã sử dụng</h4>
+                    <div class="detail-table-wrapper">
+                        <table class="detail-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên dịch vụ</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-right">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let s of selectedInvoiceDetail?.serviceDetails">
+                                    <td>{{ s.serviceName }}</td>
+                                    <td class="text-center">{{ s.quantity }}</td>
+                                    <td class="text-right">{{ s.total | number }}đ</td>
+                                </tr>
+                                <tr *ngIf="!selectedInvoiceDetail?.serviceDetails?.length">
+                                    <td colspan="3" class="text-center empty-row">Không có dịch vụ đính kèm</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tổng kết chi phí -->
+                <div class="summary-box">
+                    <div class="sum-row">
+                        <span>Tiền phòng:</span>
+                        <span>{{ selectedInvoiceDetail?.invoiceInfo?.roomSubTotal | number }}đ</span>
+                    </div>
+                    <div class="sum-row">
+                        <span>Tiền dịch vụ:</span>
+                        <span>{{ selectedInvoiceDetail?.invoiceInfo?.serviceSubTotal | number }}đ</span>
+                    </div>
+                    <div class="sum-total">
+                        <span>TỔNG CỘNG</span>
+                        <span class="total-value">{{ selectedInvoiceDetail?.invoiceInfo?.totalAmount | number }}đ</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-print-large"><i class="fa-solid fa-print"></i> In hóa đơn</button>
+                <button class="btn-close-modal" (click)="showDetailModal = false">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>

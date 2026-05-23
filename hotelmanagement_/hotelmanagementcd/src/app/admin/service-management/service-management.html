@@ -1,0 +1,71 @@
+<div class="vintage-ledger-container">
+  <!-- Header với thanh tìm kiếm tích hợp -->
+  <div class="ledger-header">
+    <div class="ledger-title-box">
+      <h2 class="ledger-title">Sổ Cái Dịch Vụ</h2>
+      <div class="ledger-line"></div>
+      <p class="ledger-subtitle">CINNAMON HOTEL - EST. 2026</p>
+    </div>
+    
+    <div class="ledger-tools">
+      <input type="text" [(ngModel)]="searchText" class="ledger-search" placeholder="Tìm tên dịch vụ...">
+      <button class="btn-ledger-add" (click)="isShowingAddForm = !isShowingAddForm">
+        <i class="fas fa-plus"></i> THÊM MỚI
+      </button>
+    </div>
+  </div>
+
+  <!-- Form nhập liệu phong cách "Giấy ghi chú" -->
+  <div class="note-form animate-fade" *ngIf="isShowingAddForm">
+    <div class="note-header">Ghi chú dịch vụ mới</div>
+    <div class="note-body">
+      <div class="note-row">
+        <div class="note-col">
+          <label>Tên dịch vụ</label>
+          <input type="text" [(ngModel)]="newService.serviceName" placeholder="...">
+        </div>
+        <div class="note-col">
+          <label>Đơn vị</label>
+          <input type="text" [(ngModel)]="newService.unit" placeholder="...">
+        </div>
+        <div class="note-col">
+          <label>Đơn giá</label>
+          <input type="number" [(ngModel)]="newService.price">
+        </div>
+        <div class="note-col-btn">
+          <button class="btn-note-save" (click)="isEditMode ? updateService() : onAddService()">
+            {{ isEditMode ? 'CẬP NHẬT' : 'GHI SỔ' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bảng Sổ cái -->
+  <div class="table-wrapper">
+    <table class="ledger-table">
+      <thead>
+        <tr>
+          <th width="10%">ID</th>
+          <th width="40%">DIỄN GIẢI DỊCH VỤ</th>
+          <th width="15%">ĐƠN VỊ</th>
+          <th width="20%">ĐƠN GIÁ (VNĐ)</th>
+          <th width="15%">THAO TÁC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of filteredServices">
+          <td class="text-center font-serif">#{{ s.serviceID || s.ServiceID }}</td>
+          <td class="font-bold text-wood">{{ s.serviceName || s.ServiceName }}</td>
+          <td><span class="unit-tag">{{ s.unit || s.Unit }}</span></td>
+          <td class="text-right price-font">{{ (s.price || s.Price) | number }}</td>
+          <td class="text-center">
+            <button class="btn-ledger-icon" (click)="onEdit(s)"><i class="fas fa-pen"></i></button>
+            <button class="ledger-sep">|</button>
+            <button class="btn-ledger-icon text-red" (click)="onDelete(s.serviceID || s.ServiceID, s.serviceName || s.ServiceName)"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

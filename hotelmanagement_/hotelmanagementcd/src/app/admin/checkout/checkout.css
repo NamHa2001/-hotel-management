@@ -1,0 +1,461 @@
+/* =========================
+   GLOBAL
+========================= */
+.admin-container {
+    padding: 30px;
+    background: #F8FAFC;
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+/* =========================
+   HEADER
+========================= */
+.header-section {
+    margin-bottom: 25px;
+}
+
+.header-section h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1A1C1E;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #64748B;
+}
+
+/* =========================
+   GRID
+========================= */
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.no-data {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #94A3B8;
+}
+
+/* =========================
+   ROOM CARD
+========================= */
+.room-card {
+    background: #FFFFFF;
+    border-radius: 18px;
+    padding: 18px;
+    border: 1px solid #E2E8F0;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.25s ease;
+}
+
+.room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(56,189,248,0.2);
+}
+
+/* =========================
+   STATUS
+========================= */
+.status-indicator {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 30px;
+
+    background: #FACC15;
+    color: white;
+
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.status-indicator.ready {
+    background: #38BDF8;
+}
+
+/* =========================
+   ROOM CONTENT
+========================= */
+.room-id {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.room-desc {
+    font-size: 0.85rem;
+    color: #94A3B8;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.card-actions {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-action {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+/* PRIMARY */
+.btn-action.primary {
+    background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+    color: white;
+    box-shadow: 0 4px 10px rgba(56,189,248,0.3);
+}
+
+.btn-action.primary:hover {
+    transform: translateY(-2px);
+}
+
+/* SECONDARY */
+.btn-action.secondary {
+    background: #F1F5F9;
+    color: #0EA5E9;
+}
+
+.btn-action.secondary:hover {
+    background: #E0F2FE;
+}
+
+/* =========================
+   OVERLAY
+========================= */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+}
+
+/* =========================
+   MODAL
+========================= */
+.modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 600px;
+    max-width: 95%;
+    max-height: 90vh;
+
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+
+    border-radius: 18px;
+    border: 1px solid #E2E8F0;
+
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* =========================
+   MODAL HEADER
+========================= */
+.modal-header {
+    padding: 18px;
+    border-bottom: 1px solid #E2E8F0;
+    text-align: center;
+    background: #FFFFFF;
+}
+
+.modal-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+/* =========================
+   MODAL BODY
+========================= */
+.modal-body,
+.invoice-paper {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* =========================
+   SERVICE LIST
+========================= */
+.service-list {
+    margin-bottom: 20px;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.item-row .name {
+    font-weight: 500;
+    color: #334155;
+}
+
+/* CONTROLS */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls button {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    border-color: #38BDF8;
+}
+
+.controls .plus {
+    color: #0EA5E9;
+    font-weight: 700;
+}
+
+.qty {
+    min-width: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* =========================
+   TEXTAREA
+========================= */
+.damage-report {
+    margin-top: 15px;
+}
+
+.damage-report label {
+    font-weight: 600;
+    color: #F43F5E;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.damage-report textarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    padding: 10px;
+    resize: none;
+}
+
+/* =========================
+   INVOICE HEADER
+========================= */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #0EA5E9;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.invoice-tag {
+    font-weight: 800;
+    color: #0EA5E9;
+}
+
+/* =========================
+   INVOICE DETAILS
+========================= */
+.invoice-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* =========================
+   TABLE
+========================= */
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.invoice-table th {
+    background: #F1F5F9;
+    color: #0F172A;
+    padding: 10px;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.invoice-table td {
+    padding: 10px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+/* =========================
+   PAYMENT
+========================= */
+.payment-calculator {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.9rem;
+}
+
+.input-row {
+    margin: 6px 0;
+}
+
+.calc-row input {
+    width: 140px;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    text-align: right;
+}
+
+/* highlight */
+.highlight {
+    background: #FFF7ED;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* total */
+.primary-total {
+    border-top: 1px solid #E2E8F0;
+    margin-top: 10px;
+    padding-top: 10px;
+    font-weight: 600;
+}
+
+.final-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #F43F5E;
+}
+
+/* change */
+.change-row {
+    font-weight: 600;
+    color: #16A34A;
+}
+
+.change-value {
+    font-size: 1.1rem;
+}
+
+/* =========================
+   PAYMENT METHOD
+========================= */
+.payment-method-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.payment-method-row select {
+    flex: 1;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+}
+
+/* =========================
+   NOTE
+========================= */
+.note-display {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #C5A059;
+    font-style: italic;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.modal-footer {
+    padding: 15px;
+    border-top: 1px solid #E2E8F0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: #FFFFFF;
+}
+
+/* BUTTON FOOTER */
+.btn-outline {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    cursor: pointer;
+}
+
+.btn-save {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #38BDF8;
+    color: white;
+    border: none;
+}
+
+.btn-confirm {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #F43F5E, #FB7185);
+    color: white;
+    font-weight: 600;
+    border: none;
+}
+
+/* DISABLED */
+.btn-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -1,0 +1,274 @@
+<div class="rooms-container">
+
+  <div class="rooms-header-section">
+   <div class="header-content">
+      <h2 class="title">Sơ Đồ Phòng Lưu Trú</h2>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <p class="subtitle">Hệ thống quản lý khách sạn cổ điển</p>
+        <div class="badge-efficiency">
+          HIỆU SUẤT: {{ occupancyRate }}%
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-add-primary" (click)="openAddRoomModal()">
+      <i class="fas fa-plus-circle"></i>
+      <span>Thêm phòng mới</span>
+    </button>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-item border-all">
+      <span class="label">Tất cả</span>
+      <span class="count">({{ countAll }})</span>
+    </div>
+    <div class="filter-item border-available">
+      <span class="label">Trống</span>
+      <span class="count">({{ countAvailable }})</span>
+    </div>
+    <div class="filter-item border-check-in">
+      <span class="label">Đang ở</span>
+      <span class="count">({{ countOccupied }})</span>
+    </div>
+    <div class="filter-item border-dirty">
+      <span class="label">Cần dọn</span>
+      <span class="count">({{ countCleaning }})</span>
+    </div>
+  </div>
+
+  <div class="rooms-grid">
+    <div *ngFor="let room of roomsList" 
+         class="room-card" 
+         [ngClass]="getStatusClass(room.roomStatus)"
+         (click)="onRoomClick(room)">
+      
+      <div class="room-sidebar">
+        <span class="room-type">{{ room.roomType?.typeName || 'Phòng' }}</span>
+        <h3 class="room-number">{{ room.roomNumber }}</h3>
+        
+        <div class="status-icon">
+          <i *ngIf="checkStatus(room.roomStatus, 'available') || checkStatus(room.roomStatus, 'trống')" class="fas fa-check-circle"></i>
+          <i *ngIf="checkStatus(room.roomStatus, 'occupied')" class="fas fa-user-check"></i>
+          <i *ngIf="checkStatus(room.roomStatus, 'cleaning')" class="fas fa-broom"></i>
+        </div>
+      </div>
+
+      <div class="room-content">
+        <ng-container [ngSwitch]="room.roomStatus.toLowerCase()">
+          <div *ngSwitchCase="'available'">
+            <span class="status-text text-available">Sẵn sàng đón khách</span>
+          </div>
+          <div *ngSwitchCase="'trống'">
+            <span class="status-text text-available">Sẵn sàng đón khách</span>
+          </div>
+          
+          <div *ngSwitchCase="'occupied'">
+            <span class="guest-name">
+              {{ (room.bookings && room.bookings.length > 0) ? room.bookings[room.bookings.length - 1].customer?.fullName : 'Khách ẩn danh' }}
+            </span>
+            <span class="timer"><i class="far fa-clock"></i> Đang lưu trú</span>
+          </div>
+
+          <div *ngSwitchCase="'cleaning'">
+            <span class="status-text text-cleaning">Đang dọn dẹp...</span>
+            <!-- Nút bấm nhanh để hoàn tất dọn phòng -->
+           <button class="btn-action btn-heritage-confirm" 
+        (click)="onConfirmCleaned(room); $event.stopPropagation()">
+  <i class="fas fa-broom"></i> Xác nhận hoàn tất
+</button>
+          </div>
+
+          <div *ngSwitchDefault>
+            <span class="status-text">{{ room.roomStatus || 'Chưa xác định' }}</span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="selectedRoom" (click)="selectedRoom = null">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header" [ngClass]="{'bg-add': isAddMode, 'bg-edit': !isAddMode && isEditMode, 'bg-booking': isBookingMode}">
+        <div class="header-title">
+          <i [class]="isAddMode ? 'fas fa-plus-circle' : (isBookingMode ? 'fas fa-key' : 'fas fa-info-circle')"></i>
+          <h2>
+            {{ isAddMode ? 'Tạo phòng mới' : (isBookingMode ? 'Tiến hành Check-in' : 'Chi tiết phòng ' + selectedRoom.roomNumber) }}
+          </h2>
+        </div>
+        <button class="btn-close-x" (click)="selectedRoom = null">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <div *ngIf="!isEditMode && !isBookingMode">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Loại phòng:</span>
+              <span class="info-value">{{ selectedRoom.roomType?.typeName || 'Chưa xác định' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Trạng thái:</span>
+              <span class="info-value status-badge" [ngClass]="getStatusClass(selectedRoom.roomStatus)">
+                {{ selectedRoom.roomStatus }}
+              </span>
+            </div>
+          </div>
+
+          <hr class="modal-divider">
+          
+          <div *ngIf="checkStatus(selectedRoom.roomStatus, 'occupied')" class="guest-section">
+            <h4 class="section-title"><i class="fas fa-user-tag"></i> Khách đang lưu trú</h4>
+            <div class="guest-card">
+              <p><strong><i class="fas fa-user"></i> Họ tên:</strong> {{ selectedRoom.bookings && selectedRoom.bookings.length > 0 ? selectedRoom.bookings[selectedRoom.bookings.length - 1].customer?.fullName : 'N/A' }}</p>
+              <p><strong><i class="fas fa-phone"></i> Số ĐT:</strong> {{ selectedRoom.bookings && selectedRoom.bookings.length > 0 ? selectedRoom.bookings[selectedRoom.bookings.length - 1].customer?.phoneNumber : 'N/A' }}</p>
+              <button class="btn-action btn-detail-extra" (click)="onViewDetail()">
+                <i class="fas fa-external-link-alt"></i> Chi tiết dịch vụ
+              </button>
+              <!-- Nút chuyển sang trang thanh toán chuyên nghiệp -->
+              <button class="btn-action" 
+                      style="background: #944e4e; color: white; margin-top: 10px; width: 100%; justify-content: center;"
+                      (click)="goToCheckout(selectedRoom)">
+                <i class="fas fa-cash-register"></i> check out
+              </button>
+
+              <!-- Nút chức năng Đổi phòng -->
+              <button class="btn-action" 
+                      style="background: #5d6d7e; color: white; margin-top: 10px; width: 100%; justify-content: center;"
+                      (click)="onStartChangeRoom(selectedRoom)">
+                <i class="fas fa-exchange-alt"></i> Đổi sang phòng khác
+              </button>
+
+              <!-- GIAO DIỆN CHỌN PHÒNG ĐỂ ĐỔI (Chỉ hiện khi nhấn Đổi phòng) -->
+              <div *ngIf="isChangingRoom" class="room-change-picker animate-up" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                <h5 style="font-size: 0.9rem; color: #5d4037; margin-bottom: 10px;">Chọn phòng mới:</h5>
+                <div class="change-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; max-height: 150px; overflow-y: auto; padding: 5px;">
+                  <div *ngFor="let r of availableRoomsForChange" 
+                       (click)="onConfirmChangeRoom(r)"
+                       style="padding: 8px; background: #fdfaf0; border: 1px solid #d4c5a1; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s;">
+                    <strong style="font-size: 0.85rem;">{{ r.roomNumber }}</strong>
+                    <div style="font-size: 0.65rem; color: #8b735b;">{{ r.roomType?.typeName }}</div>
+                  </div>
+                </div>
+                <button class="btn-cancel-small" (click)="isChangingRoom = false" 
+                        style="width: 100%; margin-top: 10px; border: none; background: none; color: #e74c3c; font-size: 0.8rem; cursor: pointer;">
+                  Hủy đổi phòng
+                </button>
+              </div>  
+            </div>
+          </div>
+
+          <!-- Chỉ cho phép đặt phòng nếu trạng thái là Trống, không cho đặt khi đang Sửa chữa -->
+<div *ngIf="checkStatus(selectedRoom.roomStatus, 'available') || checkStatus(selectedRoom.roomStatus, 'trống')" class="empty-section">
+            <div class="empty-alert">
+              <i class="fas fa-info-circle"></i>
+              <span>Phòng đang trống. Bạn có thể thực hiện đặt phòng mới ngay bây giờ.</span>
+            </div>
+            <button class="btn-booking-start" (click)="isBookingMode = true">
+              <i class="fas fa-concierge-bell"></i> Đặt phòng ngay
+            </button>
+          </div>
+
+          <!-- Thông báo khi phòng đang bảo trì -->
+<div *ngIf="checkStatus(selectedRoom.roomStatus, 'repairing')" class="repair-alert" style="background: #ebedef; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #bdc3c7;">
+  <i class="fas fa-tools" style="font-size: 2rem; color: #7f8c8d; margin-bottom: 10px;"></i>
+  <p style="color: #2c3e50; font-weight: bold; margin: 0;">PHÒNG ĐANG BẢO TRÌ</p>
+  <p style="font-size: 0.85rem; color: #7f8c8d;">Vui lòng chuyển trạng thái sang "Trống" sau khi sửa chữa xong.</p>
+</div>
+        </div>
+
+        <div *ngIf="isBookingMode" class="booking-form-wrapper">
+          <div class="form-header-mini">
+            <button class="btn-back" (click)="isBookingMode = false"><i class="fas fa-arrow-left"></i> Quay lại</button>
+            <h4>Thông tin khách hàng</h4>
+          </div>
+
+          <div class="search-section">
+            <label class="info-label">SĐT hoặc CCCD:</label>
+            <div class="search-input-group">
+              <input type="text" [(ngModel)]="customerSearchQuery" class="form-control" placeholder="Tìm khách hàng...">
+              <button class="btn-search-action" (click)="onSearchCustomer()">Tìm kiếm</button>
+            </div>
+          </div>
+
+          <div *ngIf="foundCustomer" class="customer-result old-customer animate-fade">
+            <div class="result-icon"><i class="fas fa-user-check"></i></div>
+            <div class="result-data">
+              <p class="res-type">Khách quen</p>
+              <h6>{{ foundCustomer.fullName }}</h6>
+              <p>CCCD: {{ foundCustomer.identityCard }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="isNewCustomer" class="customer-result new-customer animate-fade">
+            <div class="result-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="result-data">
+              <p class="res-type">Khách hàng mới</p>
+              <div class="form-group-sub">
+                <input type="text" [(ngModel)]="tempCustomer.fullName" class="form-control-sub" placeholder="Nhập tên khách...">
+                <div class="row-sub">
+                  <input type="text" [(ngModel)]="tempCustomer.identityCard" class="form-control-sub" placeholder="Số CCCD">
+                  <input type="text" [(ngModel)]="tempCustomer.phoneNumber" class="form-control-sub" placeholder="Số điện thoại">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="foundCustomer || isNewCustomer" class="checkin-section animate-up">
+            <div class="form-group">
+              <label class="info-label">Giờ nhận phòng:</label>
+              <input type="datetime-local" [(ngModel)]="tempBooking.checkInTime" class="form-control">
+            </div>
+            <button class="btn-confirm-booking" (click)="onConfirmBooking()">
+              Xác nhận Check-in <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="isEditMode" class="edit-form">
+          <div class="form-group">
+            <label class="info-label">Số phòng:</label>
+            <input type="text" [(ngModel)]="selectedRoom.roomNumber" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label class="info-label">Loại phòng:</label>
+            <select [(ngModel)]="selectedRoom.roomTypeID" class="form-control" [disabled]="checkStatus(selectedRoom.roomStatus, 'occupied')">
+              <option *ngFor="let type of roomTypes" [value]="type.roomTypeID">{{ type.typeName }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="info-label">Trạng thái:</label>
+            <select [(ngModel)]="selectedRoom.roomStatus" class="form-control" [disabled]="checkStatus(selectedRoom.roomStatus, 'occupied')">
+              <option value="Available">Trống (Available)</option>
+<option value="Cleaning">Cần dọn (Cleaning)</option>
+<option value="Repairing">Sửa chữa (Repairing)</option>
+<option value="Occupied" *ngIf="checkStatus(selectedRoom.roomStatus, 'occupied')">Đang ở (Occupied)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <ng-container *ngIf="!isEditMode && !isBookingMode">
+          <button class="btn-action btn-edit" (click)="onEditClick()">
+            <i class="fas fa-edit"></i> Chỉnh sửa
+          </button>
+          <button class="btn-action btn-delete" (click)="onDeleteRoom(selectedRoom.roomID)">
+            <i class="fas fa-trash-alt"></i> Xóa phòng
+          </button>
+          <button class="btn-action btn-cancel" (click)="selectedRoom = null">Đóng</button>
+        </ng-container>
+
+        <ng-container *ngIf="isEditMode">
+          <button class="btn-action btn-save" (click)="onSaveRoom()" style="background: #10b981; color: white;">
+            <i class="fas fa-save"></i> Lưu thay đổi
+          </button>
+          <button class="btn-action btn-cancel" (click)="onCancelEdit()">Hủy bỏ</button>
+        </ng-container>
+      </div>
+
+    </div>
+  </div>
+</div>

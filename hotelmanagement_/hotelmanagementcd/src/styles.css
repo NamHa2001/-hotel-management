@@ -1,0 +1,38 @@
+:root {
+  /* Font chữ chính */
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --font-sub: 'Inter', sans-serif;
+
+  /* Bảng màu chủ đạo (Primary) */
+  --color-primary: #38BDF8;       /* Sky Blue - Dùng cho Active, Buttons chính */
+  --color-primary-dark: #0EA5E9;  /* Xanh đậm hơn cho gradient */
+  
+  /* Màu nhấn sang trọng (Accent) */
+  --color-accent: #C5A059;        /* Vàng đồng Heritage - Dùng cho Brand, Hover */
+  --color-gold-light: #F1EFE9;    /* Vàng nhạt cho border/background nhẹ */
+
+  /* Bảng màu trung tính (Neutrals) */
+  --bg-main: #F8FAFC;             /* Nền tổng thể */
+  --bg-card: #FFFFFF;             /* Nền trắng tinh cho các thẻ Content/Sidebar */
+  --text-main: #1A1C1E;           /* Chữ tiêu đề (Đen xám) */
+  --text-body: #4A4A4A;           /* Chữ nội dung */
+  --text-muted: #94A3B8;          /* Chữ chú thích nhạt */
+  
+  /* Trạng thái (Status) */
+  --color-danger: #F43F5E;        /* Đỏ hồng cho Logout/Lỗi */
+  --color-success: #10B981;       /* Xanh lá cho thanh toán thành công */
+
+  /* Hiệu ứng */
+  --shadow-sm: 0 4px 12px rgba(56, 189, 248, 0.1);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --glass: blur(10px);
+}
+/* Ép các thẻ icon sử dụng đúng font family của Font Awesome */
+.fa, .fas, .fa-solid, .fa-regular, .fa-brands {
+    font-family: "Font Awesome 6 Free" !important; /* Phải có !important */
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 900; /* Quan trọng để hiện icon Solid */
+}

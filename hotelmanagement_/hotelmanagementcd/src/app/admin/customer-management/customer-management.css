@@ -1,0 +1,506 @@
+/* =========================
+   GLOBAL
+========================= */
+.archive-list-container {
+    padding: 30px;
+    background: #F8FAFC;
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #0F172A;
+}
+
+/* =========================
+   HEADER
+========================= */
+.archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.archive-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #0F172A;
+}
+
+.archive-subtitle {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    letter-spacing: 2px;
+}
+
+/* SEARCH */
+.search-ledger {
+    position: relative;
+}
+
+.input-ledger-search {
+    width: 240px;
+    padding: 10px 36px 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: 0.2s;
+}
+
+.input-ledger-search:focus {
+    border-color: #38BDF8;
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+}
+
+.search-ledger i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+}
+
+/* =========================
+   TABLE WRAPPER
+========================= */
+.ledger-wrapper {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+}
+
+/* =========================
+   TABLE FIX ALIGNMENT
+========================= */
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* 🔥 FIX CỘT THẲNG HÀNG */
+}
+
+.ledger-table thead {
+    background: #F1F5F9;
+}
+
+.ledger-table th {
+    padding: 14px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #64748B;
+    letter-spacing: 1px;
+    text-align: left;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.ledger-table td {
+    padding: 14px;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 0.92rem;
+    vertical-align: middle;
+}
+
+/* =========================
+   ALIGN FIX (QUAN TRỌNG)
+========================= */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* =========================
+   FONT FIX (ĐỒNG BỘ 1 FONT DUY NHẤT)
+========================= */
+.font-typewriter,
+.font-code,
+.ledger-table td,
+.ledger-table th,
+.input-ledger-search,
+.cust-name-cell strong {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* SỐ (PHONE, ID) RÕ HƠN */
+.font-typewriter {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    color: #334155;
+}
+
+/* =========================
+   CUSTOMER CELL (FIX UI NAME XẤU)
+========================= */
+.cust-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cust-name-cell i {
+    color: #38BDF8;
+    font-size: 1.1rem;
+}
+
+.cust-name-cell strong {
+    font-weight: 600;
+    color: #0F172A;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn-ledger {
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-size: 0.85rem;
+}
+
+/* EDIT */
+.btn-ledger.edit {
+    background: #E0F2FE;
+    color: #0EA5E9;
+}
+
+.btn-ledger.edit:hover {
+    background: #BAE6FD;
+}
+
+/* HISTORY */
+.btn-ledger.history {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+.btn-ledger.history:hover {
+    background: #E2E8F0;
+}
+
+.sep {
+    margin: 0 6px;
+    color: #CBD5E1;
+}
+
+/* =========================
+   ROW HOVER FIX
+========================= */
+.ledger-table tr:hover {
+    background: #F8FAFC;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+.ledger-empty {
+    text-align: center;
+    padding: 40px;
+    color: #94A3B8;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   MODAL BASE
+========================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================
+   PAPER MODAL (EDIT)
+========================= */
+.note-paper-modal {
+    width: 440px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease-out;
+    border: 1px solid #E2E8F0;
+}
+
+@keyframes pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.paper-header {
+    padding: 20px 24px;
+    background: #F8FAFC;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.paper-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1E293B;
+}
+
+.clip-icon {
+    color: #C5A059;
+}
+
+.close-btn {
+    background: #F1F5F9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748B;
+    transition: 0.2s;
+}
+.close-btn:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+.paper-body {
+    padding: 24px;
+}
+
+.paper-hint {
+    background: #F0F9FF;
+    color: #0369A1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.input-field-group {
+    margin-bottom: 18px;
+}
+
+.input-field-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.input-field-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #E2E8F0;
+    font-size: 0.95rem;
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+
+.input-field-group input:focus {
+    border-color: #38BDF8;
+    background: #FBFEFF;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    outline: none;
+}
+
+.btn-paper-cancel {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    color: #64748B;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-paper-cancel:hover {
+    background: #F1F5F9;
+}
+.btn-paper-save:hover {
+    background: #0284C7;
+    transform: translateY(-1px);
+}
+.btn-paper-save {
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: none;
+    background: #0EA5E9;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+    transition: 0.2s;
+}
+.paper-footer {
+    padding: 16px 24px;
+    background: #F8FAFC;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #F1F5F9;
+}
+
+/* =========================
+   JOURNAL MODAL (HISTORY)
+========================= */
+.journal-modal {
+    width: 800px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.journal-header {
+    padding: 24px;
+    background: #F8FAFC;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.total-badge {
+    text-align: right;
+    background: #FFF1F2;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 1px solid #FFE4E6;
+}
+.total-badge small {
+    display: block;
+    font-size: 0.65rem;
+    color: #E11D48;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.journal-branding h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.journal-branding p {
+    font-size: 0.85rem;
+    color: #64748B;
+}
+
+.total-amount {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #F43F5E;
+}
+
+.journal-content {
+    padding: 0;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* TABLE FIX ALIGN */
+.journal-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.journal-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #F8FAFC;
+    padding: 16px;
+    font-size: 0.75rem;
+    color: #94A3B8;
+}
+
+.journal-table td {
+    padding: 16px;
+    border-bottom: 1px solid #F1F5F9;
+}
+.journal-footer {
+    padding: 12px;
+    text-align: right;
+    border-top: 1px solid #E2E8F0;
+}
+
+.btn-journal-close {
+    padding: 10px 20px;
+    background: #F1F5F9;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-journal-close:hover {
+    background: #E2E8F0;
+}
+/* Nút thêm mới hồ sơ */
+.btn-add-ledger {
+    background: #0EA5E9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-add-ledger:hover {
+    background: #0284C7;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+/* Nhãn trạng thái đang lưu trú */
+.badge-staying {
+    background: #DCFCE7;
+    color: #15803D;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Nút xóa */
+.btn-ledger.delete {
+  color: #c62828;
+}
+
+.btn-ledger.delete:hover {
+  color: #ff5252;
+  transform: scale(1.1);
+}
+
+/* Phân tách giữa các nút */
+.sep {
+  color: #ccc;
+  margin: 0 5px;
+  font-weight: 100;
+}

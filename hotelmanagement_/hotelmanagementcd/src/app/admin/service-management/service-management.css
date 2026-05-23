@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Special+Elite&display=swap');
+
+.vintage-ledger-container {
+    padding: 40px;
+    background-color: #f2e9d9; /* Màu giấy ố vàng */
+    min-height: 100vh;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Header */
+.ledger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.ledger-title {
+    font-size: 2.5rem;
+    color: #4a332c;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.ledger-line {
+    height: 2px;
+    background: #c5a059;
+    margin: 5px 0;
+}
+
+.ledger-subtitle {
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    color: #8b735b;
+}
+
+/* Search & Add Button */
+.ledger-search {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #5d4037;
+    padding: 10px;
+    font-style: italic;
+    color: #5d4037;
+    outline: none;
+    width: 250px;
+    margin-right: 20px;
+}
+
+.btn-ledger-add {
+    background: #5d4037;
+    color: #f2e9d9;
+    border: none;
+    padding: 10px 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-ledger-add:hover { background: #c5a059; }
+
+/* Note Form */
+.note-form {
+    background: #fffdf9;
+    border: 1px solid #d4c5a1;
+    padding: 0;
+    margin-bottom: 30px;
+    box-shadow: 10px 10px 0px #dcd3bd;
+}
+
+.note-header {
+    background: #d4c5a1;
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #5d4037;
+}
+
+.note-body { padding: 20px; }
+.note-row { display: flex; gap: 20px; align-items: flex-end; }
+.note-col { flex: 1; display: flex; flex-direction: column; }
+.note-col label { font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; color: #8b735b; }
+.note-col input { 
+    background: transparent; 
+    border: none; 
+    border-bottom: 1px solid #ccc; 
+    padding: 8px;
+    font-family: 'Special Elite', cursive; /* Font máy đánh chữ */
+}
+
+.btn-note-save {
+    background: #5d4037;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+/* Ledger Table */
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fffdf9;
+}
+
+.ledger-table th {
+    background: #4a332c;
+    color: #f2e9d9;
+    padding: 15px;
+    text-align: left;
+    font-size: 0.85rem;
+    border: 1px solid #5d4037;
+}
+
+.ledger-table td {
+    padding: 12px 15px;
+    border: 1px solid #d4c5a1;
+    color: #4a332c;
+}
+
+.ledger-table tr:nth-child(even) { background: #fdfaf0; }
+
+.font-serif { font-family: 'Special Elite', cursive; font-size: 0.9rem; }
+.font-bold { font-weight: bold; }
+.text-wood { color: #5d4037; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.price-font { font-family: 'Special Elite', cursive; color: #944e4e; font-weight: bold; }
+
+.unit-tag {
+    background: #eee;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.btn-ledger-icon { background: none; border: none; cursor: pointer; color: #84a98c; }
+.text-red { color: #944e4e; }
+.ledger-sep { background: none; border: none; color: #ccc; margin: 0 5px; }
+
+/* Animation */
+.animate-fade { animation: fadeIn 0.5s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

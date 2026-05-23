@@ -1,0 +1,250 @@
+<div class="booking-container">
+
+  <!-- Header Section -->
+  <div class="booking-header-section">
+    <div class="header-content">
+      <h2 class="title">Quản Lý Đặt Phòng</h2>
+      <p class="subtitle">Theo dõi và xử lý toàn bộ đơn đặt phòng của khách sạn</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card" (click)="setTab('all')" [class.active]="activeTab === 'all'">
+      <div class="stat-icon-wrap blue">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Tổng đặt phòng</p>
+        <h3 class="stat-value">{{ totalCount }}</h3>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="setTab('occupied')" [class.active]="activeTab === 'occupied'">
+      <div class="stat-icon-wrap green">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Đang lưu trú</p>
+        <h3 class="stat-value">{{ occupiedCount }}</h3>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="setTab('upcoming')" [class.active]="activeTab === 'upcoming'">
+      <div class="stat-icon-wrap gold">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Sắp đến</p>
+        <h3 class="stat-value">{{ upcomingCount }}</h3>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="setTab('completed')" [class.active]="activeTab === 'completed'">
+      <div class="stat-icon-wrap muted">
+        <i class="fas fa-check-double"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Đã trả phòng</p>
+        <h3 class="stat-value">{{ completedCount }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="toolbar">
+    <div class="tab-group">
+      <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+        Tất cả <span class="tab-count">{{ totalCount }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'occupied'" (click)="setTab('occupied')">
+        Đang ở <span class="tab-count green">{{ occupiedCount }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'upcoming'" (click)="setTab('upcoming')">
+        Sắp đến <span class="tab-count gold">{{ upcomingCount }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'completed'" (click)="setTab('completed')">
+        Đã trả phòng <span class="tab-count muted">{{ completedCount }}</span>
+      </button>
+    </div>
+
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Tên khách, số phòng, số điện thoại..."
+        [(ngModel)]="searchQuery"
+        (input)="applyFilter()"
+      />
+    </div>
+  </div>
+
+  <!-- Booking Table -->
+  <div class="table-wrapper">
+    <table class="booking-table" *ngIf="filteredBookings.length > 0">
+      <thead>
+        <tr>
+          <th>Phòng</th>
+          <th>Khách hàng</th>
+          <th>Số điện thoại</th>
+          <th>Ngày nhận phòng</th>
+          <th>Ngày trả phòng</th>
+          <th>Tổng tiền</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of filteredBookings" (click)="openDetail(booking)" class="table-row">
+          <td>
+            <div class="room-cell">
+              <span class="room-number">{{ booking.room?.roomNumber || '—' }}</span>
+              <span class="room-type">{{ booking.room?.roomType?.typeName || '' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="customer-cell">
+              <i class="fas fa-user-circle customer-avatar"></i>
+              <span>{{ booking.customer?.fullName || 'Khách ẩn danh' }}</span>
+            </div>
+          </td>
+          <td class="phone-cell">{{ booking.customer?.phoneNumber || '—' }}</td>
+          <td class="date-cell">{{ formatDate(booking.checkInTime) }}</td>
+          <td class="date-cell">{{ formatDate(booking.checkOutTime) }}</td>
+          <td class="price-cell">{{ (booking.totalRoomPrice || 0) | number }}đ</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(booking)">
+              {{ getStatusLabel(booking) }}
+            </span>
+          </td>
+          <td (click)="$event.stopPropagation()">
+            <div class="action-group">
+              <button class="btn-icon btn-view" title="Xem chi tiết" (click)="openDetail(booking)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button
+                class="btn-icon btn-checkout"
+                title="Tiến hành check-out"
+                *ngIf="isOccupied(booking)"
+                (click)="goToCheckout(booking)"
+              >
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+              <button
+                class="btn-icon btn-delete"
+                title="Hủy đặt phòng"
+                *ngIf="!isCompleted(booking)"
+                (click)="onDelete(booking.bookingID)"
+              >
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty-state" *ngIf="filteredBookings.length === 0">
+      <i class="fas fa-calendar-times empty-icon"></i>
+      <p class="empty-title">Không có đặt phòng nào</p>
+      <p class="empty-subtitle">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" *ngIf="selectedBooking" (click)="closeDetail()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header" [ngClass]="getStatusClass(selectedBooking)">
+      <div class="header-title">
+        <i class="fas fa-calendar-check"></i>
+        <h2>Chi tiết đặt phòng #{{ selectedBooking.bookingID }}</h2>
+      </div>
+      <button class="btn-close-x" (click)="closeDetail()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-section">
+        <h4 class="section-title"><i class="fas fa-door-open"></i> Thông tin phòng</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Số phòng:</span>
+            <span class="info-value highlight">{{ selectedBooking.room?.roomNumber || '—' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Loại phòng:</span>
+            <span class="info-value">{{ selectedBooking.room?.roomType?.typeName || '—' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Trạng thái:</span>
+            <span class="status-badge" [ngClass]="getStatusClass(selectedBooking)">{{ getStatusLabel(selectedBooking) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tổng tiền:</span>
+            <span class="info-value price">{{ (selectedBooking.totalRoomPrice || 0) | number }}đ</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="modal-divider">
+
+      <div class="detail-section">
+        <h4 class="section-title"><i class="fas fa-user"></i> Thông tin khách hàng</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Họ tên:</span>
+            <span class="info-value">{{ selectedBooking.customer?.fullName || 'Khách ẩn danh' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Số điện thoại:</span>
+            <span class="info-value">{{ selectedBooking.customer?.phoneNumber || '—' }}</span>
+          </div>
+          <div class="info-item" *ngIf="selectedBooking.customer?.identityCard">
+            <span class="info-label">CCCD/CMND:</span>
+            <span class="info-value">{{ selectedBooking.customer.identityCard }}</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="modal-divider">
+
+      <div class="detail-section">
+        <h4 class="section-title"><i class="fas fa-calendar-alt"></i> Thời gian lưu trú</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Nhận phòng:</span>
+            <span class="info-value">{{ formatDate(selectedBooking.checkInTime) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Trả phòng:</span>
+            <span class="info-value">{{ formatDate(selectedBooking.checkOutTime) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="btn-action btn-checkout-modal"
+        *ngIf="isOccupied(selectedBooking)"
+        (click)="goToCheckout(selectedBooking)"
+      >
+        <i class="fas fa-cash-register"></i> Tiến hành Check-out
+      </button>
+      <button
+        class="btn-action btn-delete-modal"
+        *ngIf="!isCompleted(selectedBooking)"
+        (click)="onDelete(selectedBooking.bookingID)"
+      >
+        <i class="fas fa-ban"></i> Hủy đặt phòng
+      </button>
+      <button class="btn-action btn-cancel-modal" (click)="closeDetail()">
+        Đóng
+      </button>
+    </div>
+
+  </div>
+</div>

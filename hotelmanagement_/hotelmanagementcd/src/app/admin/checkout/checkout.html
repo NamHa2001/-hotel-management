@@ -1,0 +1,172 @@
+<div class="admin-container">
+  <div class="header-section">
+    <h2><i class="fas fa-cash-register"></i> Hệ Thống Thanh Toán Chuyên Nghiệp</h2>
+    <p class="subtitle">Quản lý trả phòng và đồng bộ dữ liệu buồng phòng - lễ tân</p>
+  </div>
+
+  <div class="room-grid">
+    <!-- Hiển thị loader nếu chưa có dữ liệu phòng -->
+    <div *ngIf="occupiedRooms.length === 0" class="no-data">
+      Đang tải danh sách phòng...
+    </div>
+
+    <div class="room-card" *ngFor="let room of occupiedRooms">
+      <div class="status-indicator" [class.ready]="isRoomInspected(room)">
+        {{ isRoomInspected(room) ? 'Đã kiểm phòng' : 'Chờ kiểm đồ' }}
+      </div>
+      
+      <div class="room-content">
+        <span class="room-id">Phòng {{ room.roomNumber }}</span>
+        <span class="room-desc">{{ room.roomType?.typeName }}</span>
+      </div>
+
+      <div class="card-actions">
+        <!-- Nút kiểm phòng: Luôn cho phép sửa nếu cần -->
+        <button class="btn-action secondary" (click)="onCheckRoom(room)">
+          <i class="fas fa-edit"></i> {{ isRoomInspected(room) ? 'Sửa kiểm đồ' : 'Kiểm phòng' }}
+        </button>
+        
+        <!-- Nút thanh toán: Chỉ hiện khi đã kiểm phòng xong -->
+        <button *ngIf="isRoomInspected(room)" class="btn-action primary" (click)="onFinalCheckOut(room)">
+          <i class="fas fa-receipt"></i> Thanh toán
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hệ thống Overlay & Modals -->
+  <div class="overlay" *ngIf="selectedRoom || showBillModal">
+    
+    <!-- MODAL KIỂM PHÒNG -->
+    <div class="modal inspection-modal" *ngIf="selectedRoom">
+      <div class="modal-header">
+        <h3>PHIẾU KIỂM PHÒNG {{ selectedRoom.roomNumber }}</h3>
+      </div>
+      <div class="modal-body scroll">
+        <div class="service-list">
+          <!-- Hiển thị thông báo nếu không tải được dịch vụ -->
+          <p *ngIf="availableServices.length === 0">Đang tải danh sách dịch vụ...</p>
+          
+          <div class="item-row" *ngFor="let s of availableServices">
+            <span class="name">{{ s.serviceName }}</span>
+            <div class="controls">
+              <button type="button" (click)="updateQuantity(s, -1)">-</button>
+              <span class="qty">{{ s.quantity }}</span>
+              <button type="button" class="plus" (click)="updateQuantity(s, 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="damage-report">
+          <label><i class="fas fa-exclamation-triangle"></i> Ghi chú hư hại / Phụ thu</label>
+          <textarea [(ngModel)]="note" name="note" placeholder="Ví dụ: Khách làm vỡ ly..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" (click)="selectedRoom = null">Đóng</button>
+        <button class="btn-save" (click)="onSaveInspection()">Lưu vào hệ thống</button>
+      </div>
+    </div>
+
+    <!-- MODAL HÓA ĐƠN -->
+    <div class="modal bill-modal" *ngIf="showBillModal">
+      <!-- Thêm phần header modal để đồng bộ giao diện -->
+      <div class="modal-header">
+        <h3>XÁC NHẬN THANH TOÁN</h3>
+      </div>
+
+      <div class="invoice-paper">
+        <div class="invoice-header">
+          <div class="hotel-info"><h4>GEMINI LUXURY HOTEL</h4></div>
+          <div class="invoice-tag">HÓA ĐƠN</div>
+        </div>
+
+        <div class="invoice-details">
+          <div class="info-group">
+            <p><strong>Khách hàng:</strong> {{ currentBill?.customerName || 'Khách lẻ' }}</p>
+            <p><strong>Số phòng:</strong> {{ currentBill?.roomNumber }}</p>
+          </div>
+          <div class="info-group text-right">
+            <p><strong>Vào:</strong> {{ currentBill?.checkInTime | date:'dd/MM HH:mm' }}</p>
+            <p><strong>Ra:</strong> {{ currentBill?.checkOutTime | date:'dd/MM HH:mm' }}</p>
+          </div>
+        </div>
+
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>Diễn giải</th>
+              <th>SL</th>
+              <th class="text-right">Tổng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div>Tiền phòng ({{ currentBill?.nights }} đêm)</div>
+                <small style="color: #8b735b; font-style: italic;">Đơn giá: {{ currentBill?.pricePerNight | number }}đ/đêm</small>
+              </td>
+              <td>{{ currentBill?.nights }}</td>
+              <td class="text-right">{{ currentBill?.roomPrice | number }}đ</td>
+            </tr>
+            <tr *ngFor="let s of currentBill?.services">
+              <td>{{ s.serviceName }}</td>
+              <td>{{ s.quantity }}</td>
+              <td class="text-right">{{ (s.price * s.quantity) | number }}đ</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="payment-calculator">
+          <div class="calc-row">
+            <span>Tạm tính:</span>
+            <span>{{ getTotalPrice() | number }}đ</span>
+          </div>
+          
+          <div class="calc-row input-row">
+            <span>Giảm giá (VNĐ):</span>
+            <input type="number" [(ngModel)]="discount" (input)="calculateChange()" (wheel)="$event.preventDefault()" placeholder="0">
+          </div>
+
+          <div class="calc-row primary-total">
+            <span>TỔNG CẦN THU (+10% VAT):</span>
+            <span class="final-price">{{ getFinalTotal() | number }}đ</span>
+          </div>
+
+          <div class="payment-method-row">
+            <label>PT Thanh toán:</label>
+            <select [(ngModel)]="paymentMethod">
+              <option value="Tiền mặt">Tiền mặt</option>
+              <option value="Chuyển khoản">Chuyển khoản</option>
+              <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+            </select>
+          </div>
+
+          <div class="calc-row input-row highlight">
+            <span>Khách đưa:</span>
+            <input type="number" [(ngModel)]="guestAmount" (input)="calculateChange()" (wheel)="$event.preventDefault()" placeholder="Nhập số tiền...">
+          </div>
+
+          <div class="calc-row change-row" *ngIf="guestAmount > 0">
+            <span>Tiền thối lại:</span>
+            <span class="change-value">{{ changeAmount | number }}đ</span>
+          </div>
+        </div>
+
+        <p class="note-display" *ngIf="currentBill?.note">
+          * Phụ thu/Ghi chú: {{ currentBill.note }}
+        </p>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-outline" (click)="showBillModal = false">Quay lại</button>
+        <!-- Logic Disabled rất tốt: Ép nhân viên nhập đủ tiền mặt mới được bấm xác nhận -->
+        <button class="btn-confirm" 
+                (click)="confirmPayment()" 
+                [disabled]="guestAmount < getFinalTotal() && paymentMethod === 'Tiền mặt'">
+          Xác nhận & Xuất hóa đơn
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

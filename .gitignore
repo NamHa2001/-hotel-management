@@ -1,0 +1,45 @@
+# ========================
+# NODE / ANGULAR
+# ========================
+node_modules/
+.angular/
+dist/
+
+# Angular build output vào wwwroot (được tạo khi chạy npm run build)
+**/wwwroot/
+
+# ========================
+# .NET / ASP.NET CORE
+# ========================
+**/bin/
+**/obj/
+*.user
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ========================
+# ENVIRONMENT & SECRETS
+# ========================
+**/appsettings.json
+**/appsettings.Development.json
+.env
+.env.*
+
+# ========================
+# OS / IDE
+# ========================
+.DS_Store
+Thumbs.db
+*.swp
+
+# ========================
+# ARCHIVES / TEMP
+# ========================
+*.zip
+*.rar
+New folder/
+QL_KS/
+Room Management/
+host/

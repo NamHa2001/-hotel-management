@@ -1,0 +1,83 @@
+<div class="rooms-page-container">
+    <!-- Header của trang danh sách -->
+    <header class="rooms-header">
+        <h2 class="animate-up">Khám Phá Không Gian Nghỉ Dưỡng</h2>
+        <p class="animate-up-delayed">Lựa chọn hạng phòng phù hợp với phong cách của bạn</p>
+    </header>
+
+    <div class="rooms-layout">
+        <!-- BÊN TRÁI: BỘ LỌC (SIDEBAR FILTER) -->
+        <aside class="filter-sidebar">
+            <div class="filter-box">
+                <h4 class="filter-title"><i class="fa-solid fa-sliders"></i> Bộ lọc tìm kiếm</h4>
+                
+              
+               <!-- Lọc theo giá tiền (Range Slider) -->
+                <div class="filter-group">
+                    <label>Giá tối đa: <span class="price-display">{{ filterPrice | number }}đ</span></label>
+                    <input type="range" min="0" max="10000000" step="500000" 
+                           [(ngModel)]="filterPrice">
+                    <div class="range-labels">
+                        <span>0đ</span>
+                        <span>10tr</span>
+                    </div>
+                </div>
+
+                <!-- Chú thích báo cáo: Nút bấm thực hiện lọc dữ liệu sau khi người dùng chọn các tiêu chí -->
+                <button class="btn-search-filter" (click)="applyFilter()" style="width: 100%; padding: 12px; background: #38BDF8; color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 10px; cursor: pointer;">
+                    TÌM KIẾM NGAY
+                </button>
+
+                <button class="btn-reset-filter" (click)="filterType = ''; filterPrice = 10000000; applyFilter()">
+                    Xóa tất cả bộ lọc
+                </button>
+            </div>
+        </aside>
+
+        <!-- BÊN PHẢI: DANH SÁCH PHÒNG (ROOM GRID) -->
+        <main class="rooms-grid-container">
+            <div class="room-grid">
+                <!-- Hiển thị từng Card phòng -->
+                <div class="room-card animate-up" *ngFor="let room of filteredRooms">
+                  <div class="room-image-wrapper">
+                        <!-- Chú thích: Load hình ảnh dựa trên loại phòng thực tế từ Database -->
+                        <img [src]="getRoomImage(room.roomType?.typeName)" alt="Room Image">
+                        <span class="room-badge">{{ room.roomType?.typeName }}</span>
+                    </div>
+                    
+                    <div class="room-content">
+                        <div class="room-header">
+                            <h3>Phòng {{ room.roomNumber }}</h3>
+                            <span class="room-price">
+                            <strong>{{ room.roomType?.pricePerNight | number }}đ</strong>/đêm
+                        </span>
+                        </div>
+                        
+                        <p class="room-desc">Trải nghiệm tiện nghi cao cấp với tầm nhìn tuyệt đẹp và không gian yên tĩnh.</p>
+                        
+                        <div class="room-amenities">
+                            <span><i class="fa-solid fa-wifi"></i> Wifi</span>
+                            <span><i class="fa-solid fa-snowflake"></i> AC</span>
+                            <span><i class="fa-solid fa-tv"></i> Smart TV</span>
+                        </div>
+
+                        <div class="room-footer">
+                            <button class="btn-detail" [routerLink]="['/user/room-detail', room?.roomID || room?.roomId || room?.RoomId]">
+    XEM CHI TIẾT
+                            </button>
+                            <button class="btn-book-now">
+                                ĐẶT NGAY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trường hợp không tìm thấy phòng -->
+            <div class="no-results" *ngIf="filteredRooms.length === 0">
+                <i class="fa-solid fa-bed-pulse"></i>
+                <p>Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của bạn.</p>
+            </div>
+        </main>
+    </div>
+</div>

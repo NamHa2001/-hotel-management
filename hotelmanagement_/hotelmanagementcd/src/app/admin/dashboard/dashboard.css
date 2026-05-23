@@ -1,0 +1,185 @@
+.dashboard-body {
+  padding: 24px;
+  background-color: #F4F7FE;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 12px; /* Bo góc nhẹ hơn cho sang trọng */
+  border: 1px solid #EAE2D3; /* Viền chỉ vàng nhạt */
+  box-shadow: 0 4px 20px rgba(197, 160, 89, 0.05); /* Đổ bóng màu đồng nhẹ */
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #C5A059;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Chuyển các icon stat sang tông màu Heritage */
+.blue { background: #FDFCF8; color: #C5A059; border: 1px solid #EAE2D3; }
+.green { background: #FDFCF8; color: #8E6D31; border: 1px solid #EAE2D3; }
+.purple { background: #FDFCF8; color: #1A1C1E; border: 1px solid #EAE2D3; }
+.orange { background: #FDFCF8; color: #C5A059; border: 1px solid #EAE2D3; }
+
+.stat-label { color: #A3AED0; font-size: 14px; margin: 0; font-weight: 500; }
+.stat-value {
+  color: #1A1C1E !important;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Revenue Row */
+.revenue-row {
+  margin-bottom: 24px;
+}
+
+.chart-full-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  color: #2B3674;
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+}
+
+.badge {
+  background: #F4F7FE;
+  color: #4318FF;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chart-main-container {
+  height: 300px;
+  position: relative;
+}
+
+/* Charts Row */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.room-summary {
+  text-align: center;
+  margin-top: 15px;
+  color: #2B3674;
+  font-size: 14px;
+}
+
+/* KPI Display */
+.kpi-display {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 250px;
+}
+
+.kpi-circle {
+  text-align: center;
+  border: 10px solid #F4F7FE;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kpi-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: #4318FF;
+}
+
+.kpi-details p {
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #2B3674;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 992px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* Các chỉ số phụ dưới con số chính */
+.stat-insight {
+  font-size: 0.75rem;
+  color: #8E6D31;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+}
+
+.text-gold { color: #C5A059 !important; }
+
+/* Vòng tròn công suất kiểu di sản */
+.kpi-circle-heritage {
+  text-align: center;
+  border: 6px double #EAE2D3;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #FDFCF8;
+}
+
+.kpi-details-heritage {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.kpi-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.trống { background: #EAE2D3; }
+.đang-ở { background: #C5A059; }
+.đang-dọn { background: #1A1C1E; }

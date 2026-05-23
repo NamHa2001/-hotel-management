@@ -1,0 +1,145 @@
+.heritage-report-wrapper {
+    padding: 30px;
+    background-color: #FCFBFA; /* Nền Ivory sang trọng */
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* Header */
+.report-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #EAE2D3;
+    padding-bottom: 25px;
+    margin-bottom: 30px;
+}
+
+.brand-title h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1A1C1E;
+    margin-bottom: 5px;
+}
+
+.luxury-badge {
+    background: #C5A059;
+    color: #FFF;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* Toolbar */
+.report-toolbar-premium {
+    display: flex;
+    justify-content: space-between;
+    background: #FFF;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #EAE2D3;
+    margin-bottom: 25px;
+}
+
+.luxury-input-group {
+    display: inline-flex;
+    flex-direction: column;
+    margin-right: 25px;
+}
+
+.luxury-input-group label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #8E8E8E;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.luxury-input-group input {
+    border: 1px solid #EAE2D3;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-heritage-action {
+    background: #C5A059;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-heritage-outline {
+    background: transparent;
+    color: #1A1C1E;
+    border: 2px solid #EAE2D3;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* KPI Cards */
+.kpi-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.kpi-card-luxury {
+    background: #FFF;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #EAE2D3;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.05);
+}
+
+.highlight-navy { background: #1A1C1E; border-color: #C5A059; }
+.highlight-navy .kpi-label { color: #C5A059 !important; }
+.highlight-navy .kpi-value { color: #FFF !important; }
+
+.kpi-icon.gold { color: #C5A059; font-size: 2.2rem; }
+.kpi-icon.gold-filled { color: #C5A059; font-size: 2.2rem; }
+
+.kpi-label { display: block; font-size: 0.75rem; font-weight: 700; color: #8E8E8E; text-transform: uppercase; }
+.kpi-value { font-size: 1.6rem; font-weight: 800; color: #1A1C1E; }
+
+/* Main Grid */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    gap: 30px;
+}
+
+.section-card {
+    background: #FFF;
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid #EAE2D3;
+    height: 100%;
+}
+
+h3 { font-size: 1.1rem; color: #1A1C1E; font-weight: 800; margin-bottom: 25px; }
+
+/* Service Entry */
+.service-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 0;
+    border-bottom: 1px solid #F1EFE9;
+}
+
+.entry-meta strong { display: block; font-size: 1rem; color: #1A1C1E; }
+.entry-meta small { color: #8E8E8E; font-size: 0.8rem; }
+.entry-price { color: #C5A059; font-weight: 800; font-size: 1.1rem; }
+
+.chart-container-luxury { height: 350px; position: relative; }

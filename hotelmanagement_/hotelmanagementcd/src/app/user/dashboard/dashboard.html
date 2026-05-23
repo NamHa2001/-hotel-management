@@ -1,0 +1,51 @@
+<div class="dashboard-user">
+  <!-- Hero Section: Điểm nhấn sang trọng đầu trang -->
+  <section class="hero-section">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <h1 class="animate-up">Kỳ Nghỉ Thượng Lưu Tại <span class="text-gold">NAMHA</span></h1>
+        <p class="animate-up-delayed">Nơi sự tinh tế gặp gỡ lòng hiếu khách chân thành.</p>
+        
+        <!-- Search Bar: Bộ lọc tìm kiếm nhanh bám sát thiết kế hiện đại -->
+        <div class="quick-search-bar animate-up-slow">
+          <div class="search-item">
+            <label><i class="fa-solid fa-calendar-check"></i> Ngày Đến</label>
+            <input type="date" [(ngModel)]="checkInDate">
+          </div>
+          <div class="search-item">
+            <label><i class="fa-solid fa-calendar-xmark"></i> Ngày Đi</label>
+            <input type="date" [(ngModel)]="checkOutDate">
+          </div>
+          <div class="search-item">
+            <label><i class="fa-solid fa-bed"></i> Loại Phòng</label>
+            <select [(ngModel)]="selectedRoomType">
+              <option value="">Tất cả hạng phòng</option>
+              <option value="Deluxe">Deluxe Room</option>
+              <option value="Suite">Executive Suite</option>
+              <option value="President">Presidential Suite</option>
+            </select>
+          </div>
+          <button class="btn-search-hero">
+            TÌM PHÒNG NGAY
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Section: Các tiện ích nổi bật -->
+  <section class="features">
+    <div class="feature-item">
+      <i class="fa-solid fa-utensils"></i>
+      <h4>Ẩm Thực Tinh Hoa</h4>
+    </div>
+    <div class="feature-item">
+      <i class="fa-solid fa-spa"></i>
+      <h4>Spa & Thư Giãn</h4>
+    </div>
+    <div class="feature-item">
+      <i class="fa-solid fa-swimming-pool"></i>
+      <h4>Hồ Bơi Vô Cực</h4>
+    </div>
+  </section>
+</div>

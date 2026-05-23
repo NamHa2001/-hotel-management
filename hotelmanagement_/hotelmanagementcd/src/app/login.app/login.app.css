@@ -1,0 +1,85 @@
+/* 1. Lớp vỏ ngoài cùng: Căn giữa màn hình và tạo màu nền */
+.login-wrapper {
+  display: flex;
+  justify-content: center; /* Căn giữa ngang */
+  align-items: center;     /* Căn giữa dọc */
+  min-height: 100vh;       /* Chiều cao bằng 100% màn hình */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Màu tím xanh hiện đại */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 2. Cái hộp chứa form (Thẻ Login Form) */
+.login-box {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 15px; /* Bo tròn góc */
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2); /* Đổ bóng */
+  width: 100%;
+  max-width: 400px; /* Không cho form quá to */
+  text-align: center;
+}
+
+/* 3. Tiêu đề H2 */
+h2 {
+  margin-bottom: 30px;
+  color: #333;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 4. Nhóm chứa label và input */
+.input-group {
+  margin-bottom: 20px;
+  text-align: left; /* Chữ label căn trái */
+}
+
+label {
+  display: block; /* Để label nằm dòng riêng */
+  margin-bottom: 8px;
+  color: #666;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* 5. Ô nhập liệu (Input) */
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Quan trọng: để padding không làm vỡ khung */
+}
+
+/* Hiệu ứng khi bấm vào ô input */
+.form-control:focus {
+  border-color: #764ba2;
+  outline: none;
+  box-shadow: 0 0 8px rgba(118, 75, 162, 0.2);
+}
+
+/* 6. Nút bấm (Button) */
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background: #764ba2; /* Cùng tông màu nền */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease;
+}
+
+/* Hiệu ứng khi di chuột vào nút */
+.btn-submit:hover {
+  background: #5a3682;
+}
+
+.btn-submit:active {
+  transform: scale(0.98); /* Nút nhún nhẹ khi click */
+}

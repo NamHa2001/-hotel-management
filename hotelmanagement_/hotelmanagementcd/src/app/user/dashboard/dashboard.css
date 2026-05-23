@@ -1,0 +1,194 @@
+/* ============================================================
+   ✨ NAMHA HOTEL - DASHBOARD CSS (MODERN LIGHT LUXURY)
+   ============================================================ */
+
+/* --- TỔNG THỂ DASHBOARD --- */
+.dashboard-user {
+    background-color: #F8FAFC;
+    overflow-x: hidden;
+}
+
+/* --- HERO SECTION: SÁNG & THOÁNG --- */
+.hero-section {
+    height: 85vh;
+    /* Sử dụng ảnh resort cao cấp với tông màu sáng */
+    background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070') no-repeat center center/cover;
+    position: relative;
+    margin: 0 24px; /* Tạo khoảng trống 2 bên cho hiện đại */
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+.hero-overlay {
+    height: 100%;
+    /* Overlay trắng cực mỏng (15%) để giữ độ rực rỡ của ảnh nhưng vẫn đọc được chữ */
+    background: rgba(255, 255, 255, 0.15); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+}
+
+.hero-content {
+    max-width: 900px;
+    text-align: center;
+    z-index: 2;
+}
+
+.hero-content h1 {
+    font-size: 3.8rem;
+    font-weight: 800;
+    color: #1A1C1E; /* Heading đậm trên nền sáng */
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+.text-gold {
+    color: #C5A059; /* Màu vàng nhấn */
+    position: relative;
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+    color: #4A4A4A;
+    font-weight: 500;
+    margin-bottom: 50px;
+}
+
+/* --- QUICK SEARCH BAR: HIỆU ỨNG GLASS LITE --- */
+.quick-search-bar {
+    background: rgba(255, 255, 255, 0.9); /* Trắng gần như tuyệt đối */
+    backdrop-filter: blur(15px);
+    padding: 24px 45px;
+    border-radius: 30px;
+    display: flex;
+    gap: 35px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    align-items: flex-end;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+.search-item {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 10px;
+}
+
+.search-item label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #A0A0A0; /* Label xám nhạt */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-left: 5px;
+}
+
+.search-item label i {
+    color: #38BDF8; /* Icon màu xanh Sky */
+    margin-right: 5px;
+}
+
+.search-item input, 
+.search-item select {
+    border: 1px solid #F1EFE9;
+    background: #FFFFFF;
+    padding: 13px 18px;
+    border-radius: 14px;
+    color: #0F172A;
+    font-size: 0.95rem;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 180px;
+}
+
+.search-item input:focus, 
+.search-item select:focus {
+    border-color: #38BDF8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+}
+
+/* NÚT TÌM PHÒNG: SKY BLUE GRADIENT */
+.btn-search-hero {
+    background: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%);
+    color: #FFFFFF;
+    border: none;
+    padding: 16px 35px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+    white-space: nowrap;
+}
+
+.btn-search-hero:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(56, 189, 248, 0.4);
+}
+
+/* --- FEATURE SECTION: MINIMALIST LIGHT --- */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 120px;
+    padding: 100px 0;
+    background: #F8FAFC;
+}
+
+.feature-item {
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-10px);
+}
+
+.feature-item i {
+    font-size: 2.5rem;
+    color: #C5A059; /* Vàng đồng cao cấp */
+    margin-bottom: 20px;
+    display: block;
+}
+
+.feature-item h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1A1C1E;
+    letter-spacing: 0.5px;
+}
+
+/* --- ANIMATIONS (MƯỢT MÀ HƠN) --- */
+.animate-up { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.animate-up-delayed { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards; opacity: 0; }
+.animate-up-slow { animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards; opacity: 0; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- RESPONSIVE NHẸ --- */
+@media (max-width: 1024px) {
+    .quick-search-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .hero-content h1 {
+        font-size: 2.8rem;
+    }
+}

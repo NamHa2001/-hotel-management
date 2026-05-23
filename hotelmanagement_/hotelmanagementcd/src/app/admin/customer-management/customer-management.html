@@ -1,0 +1,141 @@
+<div class="archive-list-container">
+  <!-- Tiêu đề sổ lưu trú -->
+  <div class="archive-header">
+    <div class="header-stamp">
+      <h2 class="archive-title">Sổ Niên Giám Khách Lưu Trú</h2>
+      <p class="archive-subtitle">CINNAMON HOTEL - REGISTRATION LEDGER</p>
+      <button class="btn-add-ledger" (click)="onAddCustomer()">
+      <i class="fas fa-user-plus"></i> Thêm hồ sơ mới
+    </button>
+    </div>
+    
+    <div class="search-ledger">
+      <input type="text" [(ngModel)]="searchKey" placeholder="Tìm kiếm hồ sơ..." class="input-ledger-search">
+      <i class="fas fa-search"></i>
+    </div>
+  </div>
+
+  <!-- Bảng danh sách khách hàng -->
+  <div class="ledger-wrapper">
+    <table class="ledger-table">
+      <thead>
+        <tr>
+          <th width="8%">STT</th>
+          <th width="32%">HỌ VÀ TÊN KHÁCH HÀNG</th>
+          <th width="20%">SỐ ĐIỆN THOẠI</th>
+          <th width="20%">SỐ CCCD / PASSPORT</th>
+          <th width="20%">THAO TÁC HỒ SƠ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filteredCustomers; let i = index">
+          <td class="text-center font-typewriter">{{ i + 1 }}</td>
+          <td>
+            <div class="cust-name-cell">
+              <i class="fas fa-user-circle"></i>
+              <strong>{{ c.fullName }}</strong>
+              
+            </div>
+          </td>
+          <td class="font-typewriter">{{ c.phoneNumber }}</td>
+          <td class="font-typewriter">{{ c.identityCard }}</td>
+          <td class="text-center">
+            <button class="btn-ledger edit" (click)="onEdit(c)" title="Sửa hồ sơ">
+              <i class="fas fa-edit"></i>
+            </button>
+            <span class="sep">|</span>
+           <button class="btn-ledger history" (click)="viewHistory(c)" title="Xem lịch sử">
+              <i class="fas fa-history"></i>
+            </button>
+            <span class="sep">|</span>
+            <button class="btn-ledger delete" (click)="onDelete(c.customerID)" title="Xóa hồ sơ">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Thông báo khi trống -->
+  <div *ngIf="filteredCustomers.length === 0" class="ledger-empty">
+    <p>Không tìm thấy dữ liệu khách hàng trong sổ lưu trú.</p>
+  </div>
+  <!-- MODAL HIỆU CHỈNH HỒ SƠ - PHONG CÁCH PHIẾU ĐÍNH KÈM -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
+    <div class="note-paper-modal animate-pop" (click)="$event.stopPropagation()">
+      <div class="paper-header">
+        <i class="fas fa-paperclip clip-icon"></i>
+        <h3>Phiếu Cập Nhật Hồ Sơ</h3>
+        <button class="close-btn" (click)="showEditModal = false">&times;</button>
+      </div>
+      
+      <div class="paper-body">
+        <p class="paper-hint">Mã hồ sơ: #{{ selectedCustomer.customerID }}</p>
+        
+        <div class="input-field-group">
+          <label>Họ và Tên Khách Hàng:</label>
+          <input type="text" [(ngModel)]="selectedCustomer.fullName" placeholder="Nhập họ tên...">
+        </div>
+
+        <div class="input-field-group">
+          <label>Số Điện Thoại Liên Lạc:</label>
+          <input type="text" [(ngModel)]="selectedCustomer.phoneNumber" placeholder="Nhập số điện thoại...">
+        </div>
+
+        <div class="input-field-group">
+          <label>Số Định Danh (CCCD/Passport):</label>
+          <input type="text" [(ngModel)]="selectedCustomer.identityCard" placeholder="Nhập số định danh...">
+        </div>
+      </div>
+
+      <div class="paper-footer">
+        <button class="btn-paper-cancel" (click)="showEditModal = false">Hủy bỏ</button>
+        <button class="btn-paper-save" (click)="onSaveUpdate()">
+          <i class="fas fa-file-signature"></i> Xác nhận lưu
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL NHẬT KÝ LƯU TRÚ - PHONG CÁCH SỔ TAY CỔ ĐIỂN -->
+  <div class="modal-overlay" *ngIf="showHistoryModal" (click)="showHistoryModal = false">
+    <div class="journal-modal animate-up" (click)="$event.stopPropagation()">
+      <div class="journal-header">
+        <div class="journal-branding">
+          <h2>NHẬT KÝ HÀNH TRÌNH</h2>
+          <p>Khách hàng: <strong>{{ selectedCustomer.fullName }}</strong></p>
+        </div>
+        <div class="total-badge">
+  <small>TỔNG CHI TIÊU TÍCH LŨY</small>
+  <span class="total-amount">{{ totalSpent | number }} <small>VNĐ</small></span>
+</div>
+      </div>
+
+      <div class="journal-content custom-scrollbar journal-lines">
+  <table class="journal-table">
+          <thead>
+            <tr>
+              <th>Ngày Giao Dịch</th>
+              <th>Số Hóa Đơn</th>
+              <th>Nội Dung</th>
+              <th class="text-right">Số Tiền</th>
+            </tr>
+          </thead>
+       <tbody>
+        <tr *ngFor="let inv of customerInvoices">
+          <td>{{ inv.invoiceDate | date:'dd/MM/yyyy' }}</td>
+          <td class="font-code">#INV-{{ inv.invoiceID }}</td>
+          <td>Thanh toán dịch vụ & Tiền phòng</td>
+          <td class="text-right font-bold">{{ inv.totalAmount | number }}</td>
+        </tr>
+              <td colspan="4" class="text-center italic py-4">Chưa có dữ liệu giao dịch trong quá khứ.</td>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="journal-footer">
+        <button class="btn-journal-close" (click)="showHistoryModal = false">ĐÓNG NHẬT KÝ</button>
+      </div>
+    </div>
+  </div>
+</div>
