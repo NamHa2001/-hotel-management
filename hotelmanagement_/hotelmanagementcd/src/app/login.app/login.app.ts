@@ -25,61 +25,38 @@ export class LoginApp {
   ) {}
 
   onSubmit(formData: any) {
-  if (isPlatformBrowser(this.platformId)) {
-    console.clear(); 
-    console.log('📡 Đang gửi dữ liệu đăng nhập...');
+    if (isPlatformBrowser(this.platformId)) {
+      this.authService.login(formData.username, formData.password).subscribe({
+        next: (res) => {
+          if (res && res.token) {
+            // Kiểm tra cả fullname (lowercase) và fullName để tương thích với mọi phiên bản API
+            const serverName = res.fullname || res.fullName || res.userName;
+            const userData = {
+              ...res,
+              fullName: serverName || formData.username
+            };
 
-    this.authService.login(formData.username, formData.password).subscribe({
-      next: (res) => {
-        // Log res này cực kỳ quan trọng, bạn hãy nhìn kỹ trong F12 xem 
-        // nó là 'fullname' hay 'fullName' nhé!
-        console.log('✅ Dữ liệu Server trả về:', res); 
+            this.authService.saveUserToken(userData);
 
-        if (res && res.token) {
-          // SỬA LỖI TẠI ĐÂY:
-          // Dựa trên Swagger của bạn, trường đó có thể là 'fullname' (viết thường)
-          // Chúng ta kiểm tra cả 2 trường hợp cho chắc ăn
-          const serverName = res.fullname || res.fullName || res.userName;
+            alert('Đăng nhập thành công!!!');
 
-          const userData = { 
-            ...res, 
-            fullName: serverName || formData.username 
-          };
-          
-          this.authService.saveUserToken(userData); 
-
-          // Logic tính thời gian (Giữ nguyên)
-          const expireTime = new Date(res.expiration).getTime();
-          const currentTime = new Date().getTime();
-          const timeDiff = expireTime - currentTime;
-
-          if (timeDiff > 0) {
-            console.log(`🔑 Token: ${res.token}`);
-            console.log(`👤 Tên sẽ hiển thị trên Dashboard: ${userData.fullName}`);
+            // Chú thích báo cáo: Phân luồng theo Role — Admin vào quản trị, còn lại vào giao diện người dùng.
+            // Chuyển về lowercase để tránh lỗi sai chữ hoa/thường từ API.
+            // ✅ FIX Bug G: Xóa dead code timeDiff (token vừa cấp luôn hợp lệ)
+            // ✅ FIX Bug J: Xóa toàn bộ console.log debug
+            const currentRole = (userData.userRole || '').toLowerCase();
+            if (currentRole === 'admin') {
+              this.router.navigate(['/admin/dashboard']);
+            } else {
+              this.router.navigate(['/user/dashboard']);
+            }
           }
-
-          alert('Đăng nhập thành công!!!');
-          
-          // Chú thích báo cáo: Thực hiện phân luồng người dùng (Role-based Routing). 
-          // Nếu tài khoản có quyền Admin sẽ vào khu vực quản trị, ngược lại sẽ chuyển về giao diện người dùng.
-          // Chú thích báo cáo: Chuyển đổi Role về dạng chữ thường trước khi so sánh để đảm bảo tính chính xác, 
-          // tránh lỗi không chuyển hướng do sai lệch định dạng chữ hoa/thường từ API.
-          const currentRole = (userData.userRole || '').toLowerCase();
-          
-          if (currentRole === 'admin') {
-            console.log('🚀 Điều hướng tới phân hệ Quản trị');
-            this.router.navigate(['/admin/dashboard']);
-          } else  {
-            console.log('🏠 Điều hướng tới phân hệ Người dùng');
-            this.router.navigate(['/user/dashboard']);
-          }
+        },
+        error: (err) => {
+          console.error('❌ Lỗi đăng nhập:', err);
+          alert('Đăng nhập thất bại! Kiểm tra lại tài khoản.');
         }
-      },
-      error: (err) => {
-        console.error('❌ Lỗi đăng nhập:', err);
-        alert('Đăng nhập thất bại! Kiểm tra lại tài khoản.');
-      }
-    });
+      });
+    }
   }
-}
 }

@@ -151,8 +151,7 @@ export class CheckoutComponent implements OnInit {
           );
 
           forkJoin(requests).subscribe({
-            next: (results) => {
-              console.log('Đã lưu dịch vụ:', results);
+            next: (_results) => {
               alert(`Lưu thành công thông tin phòng ${this.selectedRoom?.roomNumber}!`);
               this.finishAction();
             },

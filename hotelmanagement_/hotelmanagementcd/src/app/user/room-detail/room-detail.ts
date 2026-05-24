@@ -102,6 +102,67 @@ export class RoomDetailComponent implements OnInit {
     });
   }
 
+  /**
+   * ✅ FIX Bug E: Trả về ảnh minh họa phù hợp theo loại phòng (thay vì hardcode 1 ảnh)
+   * Dùng cùng logic với user-rooms để đồng nhất trải nghiệm.
+   */
+  getRoomImage(typeName: string | undefined): string {
+    const type = (typeName || '').toLowerCase();
+    if (type.includes('president')) {
+      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2000';
+    } else if (type.includes('suite')) {
+      return 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=2000';
+    } else if (type.includes('deluxe')) {
+      return 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=2000';
+    }
+    return 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=2000';
+  }
+
+  /**
+   * ✅ FIX Bug F: Trả về danh sách tiện nghi theo loại phòng (thay vì hardcode)
+   * DB không có cột amenities nên dùng typeName để suy ra.
+   */
+  getAmenities(typeName: string | undefined): { icon: string; label: string }[] {
+    const type = (typeName || '').toLowerCase();
+    if (type.includes('president')) {
+      return [
+        { icon: 'fa-expand',    label: '80m²' },
+        { icon: 'fa-bed',       label: 'Giường King' },
+        { icon: 'fa-wifi',      label: 'Wifi miễn phí' },
+        { icon: 'fa-snowflake', label: 'Điều hòa' },
+        { icon: 'fa-bath',      label: 'Bồn tắm Jacuzzi' },
+        { icon: 'fa-mug-hot',   label: 'Bữa sáng VIP' }
+      ];
+    } else if (type.includes('suite')) {
+      return [
+        { icon: 'fa-expand',    label: '60m²' },
+        { icon: 'fa-bed',       label: 'Giường King' },
+        { icon: 'fa-wifi',      label: 'Wifi miễn phí' },
+        { icon: 'fa-snowflake', label: 'Điều hòa' },
+        { icon: 'fa-bath',      label: 'Bồn tắm đứng' },
+        { icon: 'fa-mug-hot',   label: 'Bữa sáng' }
+      ];
+    } else if (type.includes('deluxe')) {
+      return [
+        { icon: 'fa-expand',    label: '45m²' },
+        { icon: 'fa-bed',       label: 'Giường King' },
+        { icon: 'fa-wifi',      label: 'Wifi miễn phí' },
+        { icon: 'fa-snowflake', label: 'Điều hòa' },
+        { icon: 'fa-bath',      label: 'Bồn tắm' },
+        { icon: 'fa-mug-hot',   label: 'Bữa sáng' }
+      ];
+    }
+    // Standard / mặc định
+    return [
+      { icon: 'fa-expand',    label: '30m²' },
+      { icon: 'fa-bed',       label: 'Giường đôi' },
+      { icon: 'fa-wifi',      label: 'Wifi miễn phí' },
+      { icon: 'fa-snowflake', label: 'Điều hòa' },
+      { icon: 'fa-tv',        label: 'TV màn hình phẳng' },
+      { icon: 'fa-mug-hot',   label: 'Minibar' }
+    ];
+  }
+
   private submitBooking(customerID: number) {
     const booking = {
       roomID: this.room.roomID,

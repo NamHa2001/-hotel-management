@@ -116,13 +116,13 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     if (this.isBrowser) {
-      const userData = localStorage.getItem('userToken');
-      if (userData) {
-        this.currentUser = JSON.parse(userData);
-        this.loadDashboardData();
-      } else {
-        this.router.navigate(['/login']);
-      }
+      // ✅ FIX Bug I: Redirect removed — authGuard đã bảo vệ route trước khi vào đây.
+      // Chỉ đọc currentUser để hiển thị tên trên header.
+      try {
+        const userData = localStorage.getItem('userToken');
+        if (userData) this.currentUser = JSON.parse(userData);
+      } catch {}
+      this.loadDashboardData();
     }
   }
 

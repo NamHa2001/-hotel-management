@@ -182,16 +182,8 @@ export class Service {
     return this.http.get<DashboardData>(`${this.baseApiUrl}/Dashboard/summary`);
   }
 
-  // --- QUẢN LÝ HÓA ĐƠN & BÁO CÁO ---
-  /**
-   * Lấy danh sách toàn bộ hóa đơn
-   * Chú thích báo cáo: Truy xuất tập hợp dữ liệu hóa đơn tổng thể từ hệ thống để phục vụ công tác lọc và thống kê lịch sử khách hàng tại phía Client.
-   */
-  getAllInvoices(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseApiUrl}/Invoices`);
-  }
-
   // --- QUẢN LÝ ĐẶT PHÒNG ---
+  // ✅ FIX Bug K: getAllInvoices() đã được chuyển hoàn toàn về InvoiceService để tránh trùng lặp.
   getBookings(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseApiUrl}/Booking`);
   }

@@ -36,8 +36,11 @@ namespace API_QLKhachSan.Controllers
             var phongTrong = await _context.Rooms.CountAsync(r => r.RoomStatus == "Available");
             var phongDangDon = await _context.Rooms.CountAsync(r => r.RoomStatus == "Cleaning"); // Bổ sung thêm trạng thái dọn phòng
 
-            // 3. Tính lượt Check-in trong tuần
-            var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
+            // 3. Tính lượt Check-in trong tuần (bắt đầu Thứ Hai — chuẩn ISO/Việt Nam)
+            // ✅ FIX Bug L: DayOfWeek.Sunday=0 → Sunday cần lùi 6 ngày; các ngày khác lùi (dayOfWeek - 1)
+            var dayOfWeek = (int)now.DayOfWeek;
+            var daysFromMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+            var startOfWeek = now.AddDays(-daysFromMonday).Date;
             var luotCheckInTuan = await _context.Bookings
                 .CountAsync(b => b.CheckInTime >= startOfWeek);
 

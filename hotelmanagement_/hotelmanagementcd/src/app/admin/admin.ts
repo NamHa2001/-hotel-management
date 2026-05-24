@@ -29,34 +29,21 @@ export class AdminComponent implements OnInit {
 
   private checkAuth(): void {
     if (this.isBrowser) {
-      const userData = localStorage.getItem('userToken');
-      
-      if (!userData) {
-        this.handleAuthError();
-        return;
-      }
-
+      // ✅ FIX Bug I: Redirect đã được authGuard xử lý trước khi component này khởi tạo.
+      // Chỉ giữ lại việc đọc currentUser để hiển thị tên/avatar trên sidebar.
       try {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser && typeof parsedUser === 'object') {
-          this.currentUser = parsedUser;
-          // Buộc Angular render lại ngay lập tức khi có dữ liệu người dùng
-          this.cdr.detectChanges();
-        } else {
-          this.handleAuthError();
+        const userData = localStorage.getItem('userToken');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && typeof parsedUser === 'object') {
+            this.currentUser = parsedUser;
+            this.cdr.detectChanges();
+          }
         }
-      } catch (e) {
-        console.error('Lỗi phân giải dữ liệu người dùng:', e);
-        this.handleAuthError();
+      } catch {
+        // Token bị lỗi JSON — dọn sạch, authGuard sẽ xử lý lần sau
+        localStorage.removeItem('userToken');
       }
-    }
-    // Ở môi trường SSR (Server), currentUser giữ nguyên là null để hiện Loader
-  }
-
-  private handleAuthError(): void {
-    if (this.isBrowser) {
-      localStorage.removeItem('userToken');
-      this.router.navigate(['/login']);
     }
   }
 

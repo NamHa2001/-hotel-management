@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Service } from '../../service'; 
+import { Service } from '../../service';
+import { InvoiceService } from '../../invoice.service'; // ✅ FIX Bug K: Dùng InvoiceService cho getAllInvoices (tránh trùng lặp)
 import { Customer } from '../rooms/room.model';
 
 @Component({
@@ -32,6 +33,7 @@ export class CustomerManagement implements OnInit {
   totalSpent: number = 0;            // Tổng tiền khách đã chi trả
   constructor(
     private hotelService: Service,
+    private invoiceService: InvoiceService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -90,7 +92,7 @@ export class CustomerManagement implements OnInit {
       this.cdr.detectChanges();
 
       // Hành động 2: Truy vấn dữ liệu và lọc trực tiếp từ danh sách hóa đơn
-      this.hotelService.getAllInvoices().subscribe({
+      this.invoiceService.getAllInvoices().subscribe({
        next: (invoices: any[]) => {
           // Chú thích báo cáo: Thực hiện lọc dữ liệu đa tầng. Kiểm tra ID khách hàng trực tiếp trong Invoice 
           // hoặc truy xuất thông qua đối tượng Booking liên kết để đảm bảo tính toàn vẹn của lịch sử.

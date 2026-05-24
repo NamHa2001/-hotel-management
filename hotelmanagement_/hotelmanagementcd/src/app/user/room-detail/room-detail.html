@@ -7,7 +7,8 @@
         <!-- CỘT TRÁI: HÌNH ẢNH & THÔNG TIN CHI TIẾT -->
         <div class="room-visuals animate-up-delayed">
             <div class="main-image-container">
-                <img [src]="'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2000'" alt="Room Image">
+                <!-- ✅ FIX Bug E: Ảnh động theo loại phòng, không hardcode -->
+                <img [src]="getRoomImage(room.roomType?.typeName)" alt="Room Image">
                 <div class="room-status-badge">Phòng Trống</div>
             </div>
             
@@ -26,13 +27,11 @@
                     <p>Chào mừng bạn đến với không gian nghỉ dưỡng đẳng cấp tại NAMHA Hotel. Phòng được thiết kế tối ưu với ánh sáng tự nhiên, nội thất cao cấp và tầm nhìn thoáng đãng, mang lại cảm giác thư giãn tuyệt đối.</p>
                 </div>
 
+                <!-- ✅ FIX Bug F: Tiện nghi động theo loại phòng, không hardcode -->
                 <div class="amenities-grid">
-                    <div class="amenity-item"><i class="fa-solid fa-expand"></i> 45m²</div>
-                    <div class="amenity-item"><i class="fa-solid fa-bed"></i> Giường King</div>
-                    <div class="amenity-item"><i class="fa-solid fa-wifi"></i> Wifi miễn phí</div>
-                    <div class="amenity-item"><i class="fa-solid fa-snowflake"></i> Điều hòa</div>
-                    <div class="amenity-item"><i class="fa-solid fa-bath"></i> Bồn tắm đứng</div>
-                    <div class="amenity-item"><i class="fa-solid fa-mug-hot"></i> Bữa sáng</div>
+                    <div class="amenity-item" *ngFor="let a of getAmenities(room.roomType?.typeName)">
+                        <i [class]="'fa-solid ' + a.icon"></i> {{ a.label }}
+                    </div>
                 </div>
             </div>
         </div>

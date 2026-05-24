@@ -42,10 +42,7 @@ export class Rooms implements OnInit, OnDestroy {
     // ✅ FIX Bug#20: Dùng takeUntil để unsubscribe khi component bị destroy (tránh memory leak)
     this.hotelService.refreshRooms$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        console.log('Nhận tín hiệu làm mới từ hệ thống...');
-        this.loadRooms();
-      });
+      .subscribe(() => this.loadRooms());
   }
 
   ngOnDestroy(): void {
@@ -57,7 +54,6 @@ export class Rooms implements OnInit, OnDestroy {
   refreshData() {
     this.loadRooms();
     this.loadRoomTypes();
-    console.log('Hệ thống đang tải lại sơ đồ phòng...');
   }
 
   loadRooms() {
@@ -97,16 +93,6 @@ export class Rooms implements OnInit, OnDestroy {
     this.selectedRoom = { ...room }; // Dùng spread operator để tạo bản sao, tránh sửa trực tiếp vào danh sách gốc khi chưa lưu
     this.isEditMode = false; // Reset về chế độ xem chi tiết
     this.isAddMode = false;
-    console.log('Bạn đã chọn phòng số:', room.roomNumber);
-
-    if (this.checkStatus(room.roomStatus, 'occupied')) {
-      if (room.bookings && room.bookings.length > 0) {
-        const currentBooking = this.getActiveBooking(room); // ✅ FIX Bug#3
-        console.log('Thông tin khách hàng:', currentBooking?.customer?.fullName);
-      } else {
-        console.log('Phòng báo bận nhưng chưa có dữ liệu Booking.');
-      }
-    }
   }
 
   // --- HÀM KIỂM TRA TRẠNG THÁI ---
@@ -275,48 +261,45 @@ tempBooking: any = {
 
 // Hàm tìm kiếm khách hàng dựa trên dữ liệu nhập vào (SĐT hoặc CCCD)
   onSearchCustomer() {
-  if (!this.customerSearchQuery) {
-    alert('Vui lòng nhập Số điện thoại hoặc CCCD!');
-    return;
-  }
-
-  console.log('Đang tìm kiếm với từ khóa:', this.customerSearchQuery);
-
-  this.hotelService.searchCustomer({
-    identityCard: this.customerSearchQuery,
-    phoneNumber: this.customerSearchQuery
-  }).subscribe({
-    next: (data: Customer[]) => {
-      console.log('Dữ liệu API trả về:', data); // <--- LOG QUAN TRỌNG
-
-      if (data && data.length > 0) {
-        // Tìm thấy khách cũ
-        this.foundCustomer = data[0];
-        this.isNewCustomer = false;
-        this.tempBooking.customerID = this.foundCustomer.customerID;
-        console.log('Kết quả: Đã thấy khách quen', this.foundCustomer.fullName);
-      } else {
-        // Không tìm thấy (Khách mới)
-        this.foundCustomer = null;
-        this.isNewCustomer = true;
-        
-        // Điền sẵn thông tin đã nhập vào tempCustomer
-        this.tempCustomer = {
-          customerID: 0,
-          fullName: '',
-          // Tự động phán đoán: Nếu toàn số thì có thể là CCCD hoặc SĐT
-          identityCard: this.customerSearchQuery, 
-          phoneNumber: this.customerSearchQuery
-        };
-        console.log('Kết quả: Không tìm thấy, chuyển sang chế độ khách mới');
-      }
-    },
-    error: (err: any) => {
-      console.error('Lỗi API Search:', err);
-      this.isNewCustomer = true; // Lỗi thì cũng cho nhập mới luôn
+    if (!this.customerSearchQuery) {
+      alert('Vui lòng nhập Số điện thoại hoặc CCCD!');
+      return;
     }
-  });
-}
+
+    this.hotelService.searchCustomer({
+      identityCard: this.customerSearchQuery,
+      phoneNumber: this.customerSearchQuery
+    }).subscribe({
+      next: (data: Customer[]) => {
+        if (data && data.length > 0) {
+          // Tìm thấy khách cũ
+          this.foundCustomer = data[0];
+          this.isNewCustomer = false;
+          this.tempBooking.customerID = this.foundCustomer.customerID;
+        } else {
+          // Không tìm thấy — khách mới
+          this.foundCustomer = null;
+          this.isNewCustomer = true;
+
+          // ✅ FIX Bug H: Chỉ điền đúng field dựa trên định dạng chuỗi tìm kiếm.
+          // Tránh điền SĐT vào ô CCCD (hoặc ngược lại) gây dữ liệu sai.
+          const q = this.customerSearchQuery.trim();
+          const isPhone = /^0\d{9}$/.test(q);   // SĐT VN: 10 số bắt đầu bằng 0
+          const isCCCD  = /^\d{12}$/.test(q);   // CCCD: 12 chữ số
+          this.tempCustomer = {
+            customerID: 0,
+            fullName: '',
+            identityCard: isCCCD  ? q : '',
+            phoneNumber:  isPhone ? q : ''
+          };
+        }
+      },
+      error: (err: any) => {
+        console.error('Lỗi API Search:', err);
+        this.isNewCustomer = true; // Lỗi thì cho nhập mới
+      }
+    });
+  }
 
   // Hàm xử lý khi nhấn nút "Xác nhận Đặt phòng"
   onConfirmBooking() {
@@ -329,8 +312,6 @@ tempBooking: any = {
 
       this.hotelService.addCustomer(this.tempCustomer).subscribe({
         next: (createdCustomer) => {
-          console.log('Đã tạo khách hàng mới thành công:', createdCustomer);
-          // Sau khi tạo khách xong, lấy ID vừa tạo để làm Booking
           this.executeBooking(createdCustomer.customerID);
         },
         error: (err) => alert('Lỗi khi tạo khách hàng: ' + err.error?.message)
@@ -419,7 +400,6 @@ tempBooking: any = {
     
     this.hotelService.updateRoom(room.roomID, updatedRoom).subscribe({
       next: () => {
-        console.log(`Phòng ${room.roomNumber} đã sẵn sàng.`);
         this.finishAction(); // Tự động đóng modal và load lại danh sách
       },
       error: (err) => {
