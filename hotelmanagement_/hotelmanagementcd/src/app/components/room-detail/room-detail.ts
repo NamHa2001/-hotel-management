@@ -33,16 +33,14 @@ export class RoomDetailComponent implements OnInit {
     }
   }
 
+  // ✅ FIX Bug#20 (admin side): Gọi trực tiếp getRoomById thay vì tải toàn bộ danh sách rồi filter
   loadRoomDetail() {
     this.isLoading = true;
-    this.hotelService.getRooms().subscribe({
-      // 3. Định nghĩa kiểu dữ liệu rõ ràng (Room[]) để fix lỗi "implicitly has any type"
-      next: (rooms: Room[]) => {
-        this.roomData = rooms.find((r: Room) => r.roomID === this.roomId);
+    this.hotelService.getRoomById(this.roomId).subscribe({
+      next: (room: Room) => {
+        this.roomData = room;
         this.isLoading = false;
-        console.log('Dữ liệu phòng hiện tại:', this.roomData);
       },
-      // 4. Thêm kiểu any cho lỗi để fix lỗi "implicitly has any type"
       error: (err: any) => {
         console.error('Lỗi tải chi tiết phòng:', err);
         this.isLoading = false;

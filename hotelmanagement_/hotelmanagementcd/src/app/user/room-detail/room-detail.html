@@ -15,8 +15,8 @@
                 <div class="room-title-section">
                     <!-- Chú thích báo cáo: Hiển thị số phòng và tên hạng phòng (typeName) khớp với cấu hình từ API Backend. -->
                     <h2>Phòng {{ room.roomNumber }} - <span class="text-gold">{{ room.roomType?.typeName }}</span></h2>
-                    <!-- Chú thích báo cáo: Hiển thị giá theo giờ từ trường pricePerHour đã định nghĩa trong RoomType interface. -->
-                    <p class="price-tag"><strong>{{ room.roomType?.pricePerHour | number }}đ</strong> / giờ</p>
+                    <!-- ✅ FIX Bug D: Hiển thị đúng giá theo đêm (pricePerNight) khớp với logic tính tiền khi checkout -->
+                    <p class="price-tag"><strong>{{ room.roomType?.pricePerNight | number }}đ</strong> / đêm</p>
                 </div>
 
                 <div class="divider"></div>

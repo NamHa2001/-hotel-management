@@ -96,48 +96,10 @@ namespace API_QLKhachSan.Controllers
             }
             return NoContent();
         }
-        [HttpPost("checkout/{bookingId}")]
-        public async Task<IActionResult> PostCheckOut(int bookingId, [FromBody] Invoice invoiceData)
-        {
-            // 1. Tìm thông tin Booking kèm Room
-            var booking = await _context.Bookings
-                .Include(b => b.Room)
-                .FirstOrDefaultAsync(b => b.BookingID == bookingId);
-
-            if (booking == null) return NotFound(new { message = "Không tìm thấy thông tin đặt phòng." });
-
-            try
-            {
-                // 2. Gán các thông tin tự động cho Invoice
-                invoiceData.BookingID = bookingId;
-                invoiceData.InvoiceDate = DateTime.Now;
-
-                // 3. Lưu hóa đơn vào bảng Invoices
-                _context.Invoices.Add(invoiceData);
-
-                // 4. Cập nhật trạng thái Booking và Phòng
-                booking.CheckOutTime = DateTime.Now;
-                booking.RoomStatus = "đã thanh toán"; // Trạng thái của đơn đặt
-
-                if (booking.Room != null)
-                {
-                    booking.Room.RoomStatus = "Cleaning"; // Phòng chuyển sang chờ dọn dẹp
-                }
-
-                // 5. Lưu tất cả thay đổi xuống DB
-                await _context.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    message = "Check-out và lưu hóa đơn thành công!",
-                    invoiceId = invoiceData.InvoiceID
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Lỗi khi lưu hóa đơn: " + ex.Message });
-            }
-        }
+        // ✅ FIX Bug B: Đã xóa PostCheckOut khỏi BookingController.
+        // Endpoint POST /api/Booking/checkout/{id} là dead code — frontend chỉ dùng
+        // InvoicesController.ProcessCheckOut (POST /api/Invoices/ProcessCheckOut/{id})
+        // vốn đã xử lý đầy đủ: RoomStatus, TotalRoomPrice, IsInspected, transaction.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBooking(int id)
         {

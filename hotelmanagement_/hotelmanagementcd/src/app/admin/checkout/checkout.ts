@@ -110,11 +110,16 @@ export class CheckoutComponent implements OnInit {
           serviceID: s.serviceID || s.ServiceID,
           serviceName: s.serviceName || s.ServiceName,
           price: s.price || s.Price,
-          quantity: 0 
+          quantity: 0
         }));
-        this.selectedRoom = room; 
+        this.selectedRoom = room;
         // Báo cáo: Cập nhật giao diện ngay lập tức khi Modal được mở
         this.cdr.detectChanges();
+      },
+      // ✅ FIX Bug C: Thêm error handler — nếu API lỗi thì thông báo rõ thay vì im lặng
+      error: (err) => {
+        console.error('Lỗi tải danh sách dịch vụ:', err);
+        alert('Không thể tải danh sách dịch vụ. Vui lòng kiểm tra kết nối và thử lại!');
       }
     });
   }
