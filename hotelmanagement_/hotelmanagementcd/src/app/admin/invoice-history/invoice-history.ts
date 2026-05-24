@@ -43,16 +43,24 @@ export class InvoiceHistory implements OnInit {
     });
   }
 
-  // Báo cáo: Logic lọc dữ liệu đa năng (Tìm kiếm + Ngày + Phương thức)
+  // Lọc thống nhất: tìm kiếm + ngày + phương thức thanh toán
   applyFilter(): void {
+    const start = this.startDate ? new Date(this.startDate) : null;
+    if (start) start.setHours(0, 0, 0, 0);
+    const end = this.endDate ? new Date(this.endDate) : null;
+    if (end) end.setHours(23, 59, 59, 999);
+
     this.filteredInvoices = this.invoices.filter(inv => {
-      const matchSearch = !this.searchText || 
-        inv.invoiceID.toString().includes(this.searchText) ||
+      const matchSearch = !this.searchText ||
+        (inv.invoiceID?.toString() || '').includes(this.searchText) ||
         (inv.booking?.customer?.fullName || '').toLowerCase().includes(this.searchText.toLowerCase());
-      
+
       const matchMethod = !this.selectedMethod || inv.paymentMethod === this.selectedMethod;
-      
-      return matchSearch && matchMethod;
+
+      const invDate = new Date(inv.invoiceDate);
+      const matchDate = (!start || invDate >= start) && (!end || invDate <= end);
+
+      return matchSearch && matchMethod && matchDate;
     });
   }
 
@@ -79,23 +87,13 @@ export class InvoiceHistory implements OnInit {
     });
   }
 
-  // Báo cáo: Hàm lọc theo ngày (Bổ sung để nút "Lọc dữ liệu" hoạt động)
+  // Gọi applyFilter thống nhất — cả date + text + method đều kết hợp
   onFilterByDate(): void {
     if (!this.startDate || !this.endDate) {
       alert('Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc!');
       return;
     }
-
-    const start = new Date(this.startDate);
-    start.setHours(0, 0, 0, 0); // Bắt đầu từ đầu ngày
-
-    const end = new Date(this.endDate);
-    end.setHours(23, 59, 59, 999); // Kết thúc vào cuối ngày
-
-    this.filteredInvoices = this.invoices.filter(inv => {
-      const invDate = new Date(inv.invoiceDate);
-      return invDate >= start && invDate <= end;
-    });
+    this.applyFilter();
   }
   // Báo cáo: Hàm đặt lại bộ lọc về trạng thái ban đầu
   resetFilter(): void {
@@ -115,5 +113,25 @@ export class InvoiceHistory implements OnInit {
     }
     console.log('Đang xuất danh sách hóa đơn ra Excel...');
     alert('Hệ thống đang khởi tạo file báo cáo cho ' + this.filteredInvoices.length + ' hóa đơn.');
+  }
+
+  // ✅ FIX Bug#10: Tải chi tiết hóa đơn rồi in (mở cửa sổ in của trình duyệt)
+  printInvoice(id: number): void {
+    this.invoiceService.getFullInvoiceHistory(id).subscribe({
+      next: (data) => {
+        this.selectedInvoiceDetail = data;
+        this.showDetailModal = true;
+        this.cdr.detectChanges();
+        // Trễ nhỏ để modal render xong rồi mới gọi print
+        setTimeout(() => window.print(), 300);
+      },
+      error: () => alert('Không thể tải thông tin hóa đơn để in!')
+    });
+  }
+
+  // ✅ FIX Bug#10: In hóa đơn đang xem trong modal
+  printCurrentInvoice(): void {
+    if (!this.selectedInvoiceDetail) return;
+    window.print();
   }
 }

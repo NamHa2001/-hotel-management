@@ -2,7 +2,7 @@ import { Component, OnInit, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Service } from '../../service';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router'; // ✅ FIX: Đọc query params từ dashboard search
 
 @Component({
   selector: 'app-user-rooms',
@@ -23,10 +23,16 @@ export class UserRooms implements OnInit {
 
   constructor(
     @Inject(Service) private hotelService: Service,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute // ✅ FIX Bug#13/18: Nhận query params từ dashboard search
   ) {}
 
   ngOnInit(): void {
+    // ✅ FIX: Đọc query param 'type' từ dashboard search nếu có
+    const typeParam = this.route.snapshot.queryParamMap.get('type');
+    if (typeParam) {
+      this.filterType = typeParam;
+    }
     this.loadData();
   }
 

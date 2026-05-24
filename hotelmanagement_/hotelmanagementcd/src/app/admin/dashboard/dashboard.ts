@@ -4,6 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartData } from 'chart.js';
 import { Service } from '../../service';
+import { InvoiceService } from '../../invoice.service'; // ✅ FIX Bug#11: Import InvoiceService để gọi service performance
 
 @Component({
   selector: 'app-dashboard',
@@ -24,6 +25,7 @@ export class Dashboard implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private hotelService: Service,
+    private invoiceService: InvoiceService, // ✅ FIX Bug#11
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -65,12 +67,12 @@ export class Dashboard implements OnInit {
   };
 
   // --- 2. TỈ LỆ SỬ DỤNG PHÒNG (PIE CHART) ---
+  // ✅ FIX Bug#11: Xóa "Đã đặt" — backend không trả về phongDaDat
   public roomUsageData: ChartData<'pie'> = {
-    labels: ['Trống', 'Đang ở', 'Đang dọn', 'Đã đặt'],
+    labels: ['Trống', 'Đang ở', 'Đang dọn'],
     datasets: [{
-      data: [0, 0, 0, 0],
-      // Sử dụng dải màu Heritage từ đậm đến nhạt
-      backgroundColor: ['#EAE2D3', '#C5A059', '#8E6D31', '#1A1C1E']
+      data: [0, 0, 0],
+      backgroundColor: ['#EAE2D3', '#C5A059', '#8E6D31']
     }]
   };
 
@@ -85,9 +87,11 @@ export class Dashboard implements OnInit {
     }
   };
 
-  // --- 3. DỮ LIỆU PHỤ (GIỮ NGUYÊN CODE CỦA BẠN) ---
+  // --- 3. PHÂN BỐ PHƯƠNG THỨC THANH TOÁN (PIE CHART) ---
+  // ✅ FIX Bug#11: Thay thế "Loại khách" (backend không có dữ liệu)
+  // bằng "Phương thức thanh toán" lấy từ API getServicePerformance
   public customerTypeData: ChartData<'pie'> = {
-    labels: ['Khách lẻ', 'Khách đoàn', 'Công ty'],
+    labels: ['Tiền mặt', 'Chuyển khoản', 'Thẻ tín dụng'],
     datasets: [{
       data: [0, 0, 0],
       backgroundColor: ['#4318FF', '#6AD2FF', '#EFF4FB']
@@ -123,67 +127,74 @@ export class Dashboard implements OnInit {
   }
 
   loadDashboardData() {
+    // ── Tải dữ liệu thống kê tổng quan ──
     this.hotelService.getDashboardSummary().subscribe({
       next: (data: any) => {
         this.stats = data;
 
-        // Sửa lỗi hiển thị biểu đồ: Backend thường trả về camelCase (doanhThuThang) 
-        // hoặc PascalCase (DoanhThuThang). Ta sẽ kiểm tra cả hai.
-        const currentMonthRevenue = data.doanhThuThang ?? data.DoanhThuThang ?? 0;
-        const revenueLabels = data.revenueLabels ?? data.RevenueLabels ?? this.lineChartData.labels;
+        // Backend trả về camelCase (ASP.NET Core default JSON serialization)
+        const revenueLabels = data.revenueLabels ?? data.RevenueLabels ?? [];
         const revenueValues = data.revenueValues ?? data.RevenueValues ?? [];
 
-        // Cập nhật biểu đồ đường (Doanh thu theo ngày)
+        // ✅ FIX Bug#11: Biểu đồ đường — Doanh thu 7 ngày (dữ liệu thực từ backend)
         this.lineChartData = {
           ...this.lineChartData,
           labels: revenueLabels,
-          datasets: [{ 
-            ...this.lineChartData.datasets[0], 
-            data: revenueValues
-          }]
+          datasets: [{ ...this.lineChartData.datasets[0], data: revenueValues }]
         };
 
-        // Ép biểu đồ cập nhật lại ngay lập tức
-        this.cdr.detectChanges();
-        if (this.chart) {
-          this.chart.update();
-        }
-
-        // Cập nhật biểu đồ tròn (Trạng thái phòng)
+        // ✅ FIX Bug#11: Biểu đồ tròn phòng — bỏ "Đã đặt" vì backend không có trường này
         this.roomUsageData = {
           ...this.roomUsageData,
-          datasets: [{ 
-            ...this.roomUsageData.datasets[0], 
+          datasets: [{
+            ...this.roomUsageData.datasets[0],
             data: [
-              data.phongTrong || 0, 
-              data.phongDangThue || 0, 
-              data.phongDangDon || 0, 
-              data.phongDaDat || 0
-            ] 
+              data.phongTrong    ?? data.PhongTrong    ?? 0,
+              data.phongDangThue ?? data.PhongDangThue ?? 0,
+              data.phongDangDon  ?? data.PhongDangDon  ?? 0
+            ]
           }]
-        };
-
-        // Giữ nguyên các báo cáo khác của bạn
-        this.customerTypeData = {
-          ...this.customerTypeData,
-          datasets: [{ 
-            ...this.customerTypeData.datasets[0], 
-            data: [data.khachLe || 0, data.khachDoan || 0, data.khachCongTy || 0] 
-          }]
-        };
-
-        this.serviceBarData = {
-          ...this.serviceBarData,
-          labels: data.serviceNames || [],
-          datasets: [{ ...this.serviceBarData.datasets[0], data: data.serviceValues || [] }]
         };
 
         this.cdr.detectChanges();
-        setTimeout(() => {
-          if (this.chart) this.chart.update();
-        }, 300);
+        setTimeout(() => { if (this.chart) this.chart.update(); }, 300);
       },
-      error: (err) => console.error('Lỗi Backend:', err)
+      error: (err) => console.error('Lỗi tải Dashboard Summary:', err)
+    });
+
+    // ✅ FIX Bug#11: Tải Top 5 dịch vụ từ endpoint chuyên biệt (thay vì lấy từ summary)
+    this.invoiceService.getServicePerformance().subscribe({
+      next: (perf: any[]) => {
+        this.serviceBarData = {
+          ...this.serviceBarData,
+          labels: perf.map(s => s.serviceName || s.ServiceName || ''),
+          datasets: [{
+            ...this.serviceBarData.datasets[0],
+            data: perf.map(s => s.revenue ?? s.Revenue ?? 0)
+          }]
+        };
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Lỗi tải Service Performance:', err)
+    });
+
+    // ✅ FIX Bug#11: Tải phân bố phương thức thanh toán từ invoice history
+    this.invoiceService.getAllInvoices().subscribe({
+      next: (invoices: any[]) => {
+        const cash     = invoices.filter(i => i.paymentMethod === 'Tiền mặt').length;
+        const transfer = invoices.filter(i => i.paymentMethod === 'Chuyển khoản').length;
+        const card     = invoices.filter(i => i.paymentMethod === 'Thẻ tín dụng').length;
+
+        this.customerTypeData = {
+          ...this.customerTypeData,
+          datasets: [{
+            ...this.customerTypeData.datasets[0],
+            data: [cash, transfer, card]
+          }]
+        };
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Lỗi tải Invoice data:', err)
     });
   }
 

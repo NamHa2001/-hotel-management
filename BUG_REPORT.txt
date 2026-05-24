@@ -1,0 +1,498 @@
+================================================================================
+         BÁO CÁO LỖI ĐẦY ĐỦ — NAMHA HOTEL MANAGEMENT SYSTEM
+         Ngày kiểm tra: 24/05/2026
+         Kiểm tra bởi: Claude Code (AI Assistant)
+================================================================================
+
+Dự án gồm 2 phần:
+  - Backend  : E:\QL_KhachSan\API_QLKhachSan\        (ASP.NET Core .NET 8)
+  - Frontend : E:\QL_KhachSan\hotelmanagement_\hotelmanagementcd\  (Angular)
+
+Tổng số lỗi phát hiện: 25 lỗi
+================================================================================
+
+
+════════════════════════════════════════════════════════════════════════════════
+NHÓM 1 — LỖI NGHIÊM TRỌNG (Logic sai, ảnh hưởng trực tiếp nghiệp vụ) [5 lỗi]
+════════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 1 — Checkout không cập nhật Booking.RoomStatus
+         → Tab "Đã trả phòng" luôn rỗng
+───────────────────────────────────────────────────────────────────────────────
+File backend  : API_QLKhachSan/Controllers/InvoicesController.cs
+                hàm ProcessCheckOut()
+File frontend : hotelmanagementcd/src/app/admin/booking/booking.ts
+                hàm isCompleted()
+
+Vấn đề:
+  InvoicesController.ProcessCheckOut() cập nhật:
+    ✅ booking.CheckOutTime = DateTime.Now
+    ✅ booking.Room.RoomStatus = "Cleaning"
+    ❌ KHÔNG cập nhật booking.RoomStatus = "đã thanh toán"
+
+  Frontend booking.ts kiểm tra:
+    isCompleted(b) => b.roomStatus === 'đã thanh toán' || 'checked out'
+    → Vì booking.RoomStatus vẫn là "Occupied", điều kiện KHÔNG BAO GIỜ đúng.
+
+Hậu quả:
+  - Tab "Đã trả phòng" trong trang Quản lý Đặt phòng luôn = 0
+  - Mọi booking đã thanh toán hiển thị trạng thái "Chưa xác định"
+
+Cách sửa:
+  Thêm vào InvoicesController.ProcessCheckOut(), sau dòng booking.CheckOutTime:
+    booking.RoomStatus = "đã thanh toán";
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 2 — Check-in từ Admin không lưu TotalRoomPrice → Giá phòng = 0
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/rooms/rooms.ts
+                hàm executeBooking()
+
+Vấn đề:
+  const bookingData = {
+      roomID: ...,
+      customerID: ...,
+      checkInTime: ...,
+      roomStatus: 'Occupied'
+      // ❌ Thiếu totalRoomPrice!
+  };
+
+Hậu quả:
+  - Cột "Tổng tiền" trong bảng Quản lý Đặt phòng luôn hiển thị 0đ
+    với mọi booking được tạo từ Admin panel.
+
+Cách sửa:
+  Thêm vào bookingData:
+    totalRoomPrice: this.selectedRoom?.roomType?.pricePerNight || 0
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 3 — getCurrentBooking() lấy booking cuối, không phải booking đang active
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/rooms/rooms.ts  (nhiều chỗ)
+                hotelmanagementcd/src/app/admin/checkout/checkout.ts
+                hàm getCurrentBooking()
+
+Vấn đề:
+  return room.bookings[room.bookings.length - 1];
+  // ❌ Luôn lấy phần tử CUỐI của mảng, không kiểm tra CheckOutTime
+
+Hậu quả:
+  - Phòng có nhiều lịch sử booking có thể hiển thị thông tin
+    khách cũ đã trả phòng thay vì khách đang ở.
+  - Tên khách, thông tin dịch vụ, ghi chú kiểm phòng có thể bị sai.
+
+Cách sửa:
+  return room.bookings.slice().reverse().find(b => !b.checkOutTime)
+      || room.bookings[room.bookings.length - 1];
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 4 — Đặt phòng từ giao diện User gửi identityCard = ""
+         → Khách thứ 2 trở đi nhận lỗi 400
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/user/room-detail/room-detail.ts
+                hàm createCustomerAndBook()
+File backend  : API_QLKhachSan/Controllers/CustomerController.cs
+                hàm PostCustomer()
+
+Vấn đề:
+  Frontend gửi: identityCard: ''   (chuỗi rỗng)
+  Backend kiểm tra:
+    if (_context.Customers.Any(c => c.IdentityCard == customer.IdentityCard))
+        return BadRequest("Số CMND/CCCD đã tồn tại");
+
+Hậu quả:
+  - Khách đầu tiên đặt phòng online: thành công (lưu IdentityCard = "")
+  - Khách thứ 2 trở đi: nhận lỗi 400 "Số CMND/CCCD đã tồn tại"
+  - Tính năng đặt phòng online gần như bị vô hiệu hóa.
+
+Cách sửa (chọn 1 trong 2):
+  - Phương án 1: Cho phép IdentityCard null thay vì ""
+    Backend: kiểm tra null trước khi check trùng
+  - Phương án 2: Thêm input CCCD vào form đặt phòng User side
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 5 — service.ts.checkOut() gọi endpoint không tồn tại
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/service.ts
+                hàm checkOut()
+
+Vấn đề:
+  checkOut(bookingID) {
+      return this.http.put(`${this.baseApiUrl}/Booking/CheckOut/${bookingID}`, {});
+      // ❌ PUT /api/Booking/CheckOut/{id} KHÔNG TỒN TẠI ở Backend
+  }
+  Endpoint checkout thực tế: POST /api/Invoices/ProcessCheckOut/{bookingId}
+  (được gọi đúng bởi InvoiceService.processCheckOut())
+
+Hậu quả:
+  - Nếu ai vô tình gọi service.checkOut(), nhận lỗi 404
+  - Là dead code gây nhầm lẫn cho người đọc/bảo trì code
+
+Cách sửa:
+  Xóa hàm checkOut() khỏi service.ts (đã có InvoiceService thay thế)
+
+
+════════════════════════════════════════════════════════════════════════════════
+NHÓM 2 — LỖI GIAO DIỆN (Hiển thị sai, crash) [7 lỗi]
+════════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 6 — customer-management.html: Dòng "Chưa có dữ liệu" LUÔN HIỂN THỊ
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/customer-management/
+                customer-management.html  (trong modal lịch sử lưu trú)
+
+Vấn đề:
+  <tbody>
+      <tr *ngFor="let inv of customerInvoices">...</tr>
+      <td colspan="4">Chưa có dữ liệu giao dịch trong quá khứ.</td>
+      <!-- ❌ Không có *ngIf → luôn hiển thị dù có hay không có hóa đơn -->
+  </tbody>
+
+Hậu quả:
+  - Modal "Nhật ký lưu trú" luôn có thêm 1 dòng "Chưa có dữ liệu"
+    dù khách có 10 hóa đơn hay không.
+
+Cách sửa:
+  Bọc <td> trong <tr *ngIf="customerInvoices.length === 0">
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 7 — rooms.html: Crash JS khi roomStatus = null
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/rooms/rooms.html  (dòng 57)
+
+Vấn đề:
+  <ng-container [ngSwitch]="room.roomStatus.toLowerCase()">
+  // ❌ Nếu room.roomStatus là null → TypeError: Cannot read properties of null
+
+  Backend Room.RoomStatus là string? (nullable).
+
+Hậu quả:
+  - Nếu bất kỳ phòng nào có RoomStatus = null, trang Sơ đồ phòng
+    bị crash hoàn toàn (trắng trang).
+
+Cách sửa:
+  [ngSwitch]="(room.roomStatus || '').toLowerCase()"
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 8 — Tên khách sạn không nhất quán — 3 tên khác nhau trong 1 dự án
+───────────────────────────────────────────────────────────────────────────────
+Các file liên quan:
+
+  admin.html (sidebar)             → "NAMHA HOTEL LUXURY"     ✅ Đúng
+  admin.html (breadcrumb header)   → "Cinnamon"               ❌ Sai
+  customer-management.html         → "CINNAMON HOTEL"         ❌ Sai
+  revenue-report.html              → "Cinnamon Hotel Luxury"  ❌ Sai
+  checkout.html (modal hóa đơn)    → "GEMINI LUXURY HOTEL"    ❌ Sai — QUAN TRỌNG
+
+Hậu quả:
+  - Hóa đơn in ra cho khách hàng hiển thị tên "GEMINI LUXURY HOTEL"
+    thay vì "NAMHA HOTEL"
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 9 — invoice-history.html: Phân trang là fake, hardcode cứng
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/invoice-history/
+                invoice-history.html
+
+Vấn đề:
+  <span>Hiển thị 1 - 10 trên 150 hóa đơn</span>  <!-- Hardcode -->
+  <button class="active">1</button>
+  <button>2</button>   <!-- Không có (click) handler -->
+  <button>3</button>
+
+Hậu quả:
+  - Dù có 5 hay 500 hóa đơn, luôn hiển thị "1-10 trên 150"
+  - Các nút trang 2, 3 không có tác dụng gì
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 10 — Nút in hóa đơn không có sự kiện click
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/invoice-history/
+                invoice-history.html
+
+Vấn đề:
+  <!-- Nút in từng hàng: -->
+  <button class="btn-print"><i class="fa-solid fa-print"></i></button>
+  <!-- Nút in trong modal chi tiết: -->
+  <button class="btn-print-large">In hóa đơn</button>
+  // ❌ Cả 2 nút không có (click) handler
+
+Hậu quả:
+  Bấm vào nút "In" không có phản hồi gì.
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 11 — Dashboard: Biểu đồ Bar dịch vụ và Pie loại khách luôn = 0
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/dashboard/dashboard.ts
+File backend  : API_QLKhachSan/Controllers/DashboardDtoController.cs
+
+Vấn đề:
+  Frontend cần:  data.khachLe, data.khachDoan, data.khachCongTy
+                 data.serviceNames, data.serviceValues
+                 data.phongDaDat
+  Backend trả:   Không có bất kỳ field nào trong số này!
+
+Hậu quả:
+  - Biểu đồ "Loại khách" (Pie): luôn [0, 0, 0]
+  - Biểu đồ "Top dịch vụ" (Bar): luôn rỗng
+  - Slice thứ 4 "Đã đặt" trong Pie trạng thái phòng: luôn = 0
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 12 — invoice-history: Nhãn "tháng này" hiển thị tổng toàn thời gian
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/invoice-history/
+                invoice-history.html + invoice-history.ts
+
+Vấn đề:
+  HTML hiển thị: "Tổng doanh thu (tháng này)"
+  Nhưng TypeScript tính:
+    getTotalRevenue() => this.filteredInvoices.reduce(sum + totalAmount)
+    filteredInvoices mặc định = TẤT CẢ hóa đơn, không lọc theo tháng
+
+Hậu quả:
+  - Con số hiển thị là tổng doanh thu TỪ TRƯỚC ĐẾN NAY,
+    không phải tháng hiện tại.
+
+
+════════════════════════════════════════════════════════════════════════════════
+NHÓM 3 — TÍNH NĂNG CHƯA HOÀN THIỆN (Stub/Placeholder) [6 lỗi]
+════════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 13 — Nút "TÌM PHÒNG NGAY" trên User Dashboard không làm gì
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/user/dashboard/dashboard.html
+
+  <button class="btn-search-hero">TÌM PHÒNG NGAY</button>
+  // ❌ Không có (click) handler, không navigate, không filter
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 14 — Nút "ĐẶT NGAY" trên trang User Rooms không làm gì
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/user/user-rooms/user-rooms.html
+
+  <button class="btn-book-now">ĐẶT NGAY</button>
+  // ❌ Không có (click) handler
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 15 — User Rooms hiển thị cả phòng đang có khách
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/user/user-rooms/user-rooms.ts
+                hàm loadData() + applyFilter()
+
+Vấn đề:
+  Không lọc roomStatus, hiển thị TẤT CẢ phòng kể cả Occupied/Cleaning.
+
+Hậu quả:
+  - Người dùng thấy phòng "Đang có khách" và cố đặt → nhận lỗi 400
+    "Phòng này hiện đang có khách, không thể đặt thêm!"
+  - Trải nghiệm người dùng kém.
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 16 — Xuất báo cáo Excel là placeholder (không thực sự xuất file)
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/invoice-history/invoice-history.ts
+                hàm exportToExcel()
+
+  exportToExcel() {
+      alert('Hệ thống đang khởi tạo file báo cáo...');
+      // ❌ Không có xử lý thực sự, không có thư viện xlsx
+  }
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 17 — Route /user/services trỏ sai component
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/app.routes.ts
+
+  { path: 'services', component: UserDashboard }
+  // ❌ Nên trỏ đến một trang danh sách dịch vụ, không phải Dashboard
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 18 — User Rooms không có input lọc theo loại phòng trên giao diện
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/user/user-rooms/user-rooms.html
+                hotelmanagementcd/src/app/user/user-rooms/user-rooms.ts
+
+Vấn đề:
+  TypeScript có biến: filterType: string = ''
+  Hàm applyFilter() sử dụng filterType
+  Nhưng HTML không có <select> hoặc <input> nào để set filterType.
+
+Hậu quả:
+  Bộ lọc theo loại phòng không dùng được trên giao diện.
+
+
+════════════════════════════════════════════════════════════════════════════════
+NHÓM 4 — LỖI HIỆU NĂNG [3 lỗi]
+════════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 19 — N+1 Query trong Dashboard (7 truy vấn SQL riêng lẻ)
+───────────────────────────────────────────────────────────────────────────────
+File backend  : API_QLKhachSan/Controllers/DashboardDtoController.cs
+                hàm GetDashboardSummary()
+
+Vấn đề:
+  summary.RevenueValues = last7Days.Select(d =>
+      _context.Invoices               // ❌ Mỗi ngày chạy 1 query riêng
+          .Where(i => i.InvoiceDate.Date == d.Date)
+          .Sum(i => i.TotalAmount)
+  ).ToList();
+  // = 7 câu SQL riêng lẻ thay vì 1 câu GROUP BY
+
+Cách sửa:
+  Load tất cả invoice 7 ngày 1 lần, rồi GroupBy tại C# (in-memory).
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 20 — room-detail load toàn bộ danh sách phòng để tìm 1 phòng
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/components/room-detail/room-detail.ts
+                hotelmanagementcd/src/app/user/room-detail/room-detail.ts
+                cả 2 hàm loadRoomDetail()
+
+Vấn đề:
+  this.hotelService.getRooms().subscribe(rooms => {  // Load TẤT CẢ phòng
+      this.roomData = rooms.find(r => r.roomID === id);
+  });
+  // ❌ Nên dùng GET /api/Room/{id}
+
+Cách sửa:
+  Thêm hàm getRoomById(id: number) vào service.ts:
+    return this.http.get<Room>(`${this.baseApiUrl}/Room/${id}`);
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 21 — Memory leak: refreshRooms$ không được unsubscribe
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/admin/rooms/rooms.ts
+                hotelmanagementcd/src/app/admin/booking/booking.ts
+
+Vấn đề:
+  ngOnInit() {
+      this.hotelService.refreshRooms$.subscribe(() => ...);
+      // ❌ Không có ngOnDestroy() + unsubscribe hoặc takeUntil(destroy$)
+  }
+
+Hậu quả:
+  Memory leak nếu component bị destroy và re-create nhiều lần
+  (ví dụ: navigate đi về nhiều lần).
+
+
+════════════════════════════════════════════════════════════════════════════════
+NHÓM 5 — LỖI BẢO MẬT [4 lỗi]
+════════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 22 — Mật khẩu lưu dạng plain text, không hash
+───────────────────────────────────────────────────────────────────────────────
+File backend  : API_QLKhachSan/Models/User.cs
+                API_QLKhachSan/Controllers/UserController.cs hàm Login()
+
+Vấn đề:
+  Passwords được lưu nguyên văn vào database.
+  Login so sánh trực tiếp: u.Passwords == loginData.Passwords
+
+Rủi ro:
+  Nếu database bị lộ, toàn bộ mật khẩu bị lộ ngay lập tức.
+
+Cách sửa:
+  Dùng BCrypt.Net-Next để hash khi tạo user và verify khi login.
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 23 — Không có [Authorize] trên bất kỳ API endpoint nào
+───────────────────────────────────────────────────────────────────────────────
+File backend  : Tất cả Controllers
+
+Vấn đề:
+  JWT token được tạo ra sau login nhưng không được kiểm tra.
+  Mọi API (GET/POST/PUT/DELETE) đều truy cập được mà không cần token.
+
+Rủi ro:
+  Bất kỳ ai biết URL API đều có thể:
+  - Xem toàn bộ danh sách khách hàng, hóa đơn
+  - Tạo/sửa/xóa dữ liệu tùy ý
+
+Cách sửa:
+  1. Thêm JWT validation vào Program.cs (AddAuthentication + AddJwtBearer)
+  2. Thêm [Authorize] trên các controller cần bảo vệ
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 24 — Không có Route Guard trên /admin
+───────────────────────────────────────────────────────────────────────────────
+File frontend : hotelmanagementcd/src/app/app.routes.ts
+
+Vấn đề:
+  Không có canActivate guard trên route /admin.
+  AdminComponent tự check localStorage trong ngOnInit,
+  nhưng component đã render rồi mới redirect.
+
+Rủi ro:
+  Người dùng có thể thấy nội dung trang Admin thoáng qua.
+  URL /admin/* có thể truy cập trực tiếp.
+
+Cách sửa:
+  Tạo AuthGuard implements CanActivate,
+  thêm canActivate: [AuthGuard] vào route /admin.
+
+───────────────────────────────────────────────────────────────────────────────
+LỖI 25 — Credentials thật được commit vào git
+───────────────────────────────────────────────────────────────────────────────
+File backend  : API_QLKhachSan/API_QLKhachSan/appsettings.json
+
+Vấn đề:
+  "DefaultConnection": "...Password=Namha2001@..."
+  "Jwt": { "Key": "Minh_da_yeu_thuong_mot_nguoi_say_dam_nu_cuoi..." }
+
+  File này đã được commit vào git repository.
+
+Rủi ro:
+  Nếu repository bị public hoặc bị lộ, toàn bộ thông tin
+  kết nối database và JWT secret key bị lộ.
+
+Cách sửa:
+  1. Thêm appsettings.json vào .gitignore
+  2. Dùng appsettings.example.json (đã có sẵn) làm template
+  3. Dùng environment variables hoặc User Secrets cho development
+
+
+================================================================================
+BẢNG TỔNG KẾT
+================================================================================
+
+  Nhóm 1 — Logic nghiệp vụ sai       : 5 lỗi  [NGHIÊM TRỌNG]
+  Nhóm 2 — Giao diện sai/crash        : 7 lỗi  [CAO]
+  Nhóm 3 — Tính năng chưa hoàn thiện  : 6 lỗi  [TRUNG BÌNH]
+  Nhóm 4 — Hiệu năng                  : 3 lỗi  [TRUNG BÌNH]
+  Nhóm 5 — Bảo mật                    : 4 lỗi  [NGHIÊM TRỌNG]
+  ─────────────────────────────────────────────
+  TỔNG CỘNG                           : 25 lỗi
+
+================================================================================
+ƯU TIÊN SỬA THEO THỨ TỰ ĐỀ XUẤT
+================================================================================
+
+  ★★★ Ưu tiên 1 (Ảnh hưởng nghiệp vụ hàng ngày):
+      Lỗi 1  — Booking.RoomStatus không cập nhật sau checkout
+      Lỗi 2  — TotalRoomPrice = 0 khi check-in từ Admin
+      Lỗi 3  — getCurrentBooking() lấy sai booking
+      Lỗi 4  — Đặt phòng online lỗi từ khách thứ 2
+      Lỗi 7  — Crash JS khi roomStatus = null
+
+  ★★  Ưu tiên 2 (Giao diện sai, ảnh hưởng nghiệp vụ):
+      Lỗi 6  — "Chưa có dữ liệu" luôn hiển thị
+      Lỗi 8  — Tên khách sạn sai trên hóa đơn (GEMINI)
+      Lỗi 9  — Phân trang fake
+      Lỗi 11 — Biểu đồ Dashboard luôn = 0
+      Lỗi 15 — User Rooms hiện cả phòng đang có khách
+
+  ★   Ưu tiên 3 (Bảo mật & Cải thiện):
+      Lỗi 22 — Password plain text
+      Lỗi 23 — Không có [Authorize]
+      Lỗi 24 — Không có Route Guard
+      Lỗi 25 — Credentials trong git
+      Các lỗi còn lại
+
+================================================================================
+                          END OF REPORT
+================================================================================

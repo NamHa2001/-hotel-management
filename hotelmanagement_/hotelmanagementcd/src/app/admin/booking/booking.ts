@@ -1,8 +1,10 @@
-import { Component, OnInit, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Service } from '../../service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators'; // ✅ FIX Bug#20: Import để unsubscribe khi component destroy
 
 @Component({
   selector: 'app-booking-management',
@@ -11,7 +13,9 @@ import { Service } from '../../service';
   templateUrl: './booking.html',
   styleUrl: './booking.css'
 })
-export class BookingManagement implements OnInit {
+export class BookingManagement implements OnInit, OnDestroy {
+  // ✅ FIX Bug#20: Subject để unsubscribe mọi Observable khi component bị destroy
+  private destroy$ = new Subject<void>();
   allBookings: any[] = [];
   filteredBookings: any[] = [];
 
@@ -32,7 +36,15 @@ export class BookingManagement implements OnInit {
 
   ngOnInit(): void {
     this.loadBookings();
-    this.hotelService.refreshRooms$.subscribe(() => this.loadBookings());
+    // ✅ FIX Bug#20: Dùng takeUntil để tự động unsubscribe khi component bị destroy
+    this.hotelService.refreshRooms$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadBookings());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadBookings(): void {
@@ -78,18 +90,34 @@ export class BookingManagement implements OnInit {
     this.filteredBookings = result;
   }
 
+  // Đang ở = booking Occupied + phòng thực tế vẫn Occupied + đã qua giờ nhận phòng
+  // Cross-reference room.roomStatus để loại bỏ các booking cũ "mồ côi" (phòng đã reset thủ công mà không qua checkout)
+  // ✅ FIX Bug#1: Thêm && !b.checkOutTime để booking đã checkout không còn hiện ở tab "Đang ở"
   isOccupied(b: any): boolean {
-    return (b.roomStatus || '').toLowerCase() === 'occupied';
+    const bookingStatus = (b.roomStatus || '').toLowerCase();
+    const roomStatus = (b.room?.roomStatus || '').toLowerCase();
+    const checkIn = new Date(b.checkInTime);
+    return bookingStatus === 'occupied'
+      && roomStatus === 'occupied'
+      && checkIn <= new Date()
+      && !b.checkOutTime; // ✅ FIX: Booking đã checkout (có checkOutTime) không còn "Đang ở"
   }
 
+  // ✅ FIX Bug#1: Thêm || !!b.checkOutTime làm fallback — nếu roomStatus chưa cập nhật kịp nhưng
+  // checkOutTime đã được ghi thì vẫn nhận diện đúng là "Đã trả phòng"
   isCompleted(b: any): boolean {
     const s = (b.roomStatus || '').toLowerCase();
-    return s === 'đã thanh toán' || s === 'checked out';
+    return s === 'đã thanh toán' || s === 'checked out' || !!b.checkOutTime;
   }
 
-  private isUpcoming(b: any, now: Date): boolean {
+  // Sắp đến = booking Occupied + phòng thực tế Occupied + giờ nhận phòng còn trong tương lai
+  isUpcoming(b: any, now: Date): boolean {
+    const bookingStatus = (b.roomStatus || '').toLowerCase();
+    const roomStatus = (b.room?.roomStatus || '').toLowerCase();
     const checkIn = new Date(b.checkInTime);
-    return checkIn > now && !this.isCompleted(b);
+    return bookingStatus === 'occupied'
+      && roomStatus === 'occupied'
+      && checkIn > now;
   }
 
   setTab(tab: string): void {
@@ -131,14 +159,15 @@ export class BookingManagement implements OnInit {
 
   getStatusLabel(booking: any): string {
     if (this.isCompleted(booking)) return 'Đã trả phòng';
+    // Kiểm tra upcoming trước occupied để tránh nhầm booking tương lai
+    if (this.isUpcoming(booking, new Date())) return 'Sắp đến';
     if (this.isOccupied(booking)) return 'Đang ở';
-    const checkIn = new Date(booking.checkInTime);
-    if (checkIn > new Date()) return 'Sắp đến';
     return booking.roomStatus || 'Chưa xác định';
   }
 
   getStatusClass(booking: any): string {
     if (this.isCompleted(booking)) return 'status-completed';
+    if (this.isUpcoming(booking, new Date())) return 'status-upcoming';
     if (this.isOccupied(booking)) return 'status-occupied';
     return 'status-upcoming';
   }

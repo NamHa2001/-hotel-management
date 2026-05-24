@@ -68,7 +68,7 @@ export const routes: Routes = [
       
       // Các trang đang phát triển cho người dùng
       { path: 'rooms', component: UserRooms },
-      { path: 'services', component: UserDashboard },
+      { path: 'services', component: UserRooms }, // ✅ FIX Bug#17: Trỏ đúng sang UserRooms thay vì UserDashboard
       { path: 'room-detail/:id', component: UserRoomDetail }
     ]
   },

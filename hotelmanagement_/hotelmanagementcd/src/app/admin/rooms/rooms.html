@@ -54,17 +54,19 @@
       </div>
 
       <div class="room-content">
-        <ng-container [ngSwitch]="room.roomStatus.toLowerCase()">
+        <!-- ✅ FIX Bug#7: Thêm optional chaining ?. để tránh crash khi roomStatus là null -->
+        <ng-container [ngSwitch]="room.roomStatus?.toLowerCase()">
           <div *ngSwitchCase="'available'">
             <span class="status-text text-available">Sẵn sàng đón khách</span>
           </div>
           <div *ngSwitchCase="'trống'">
             <span class="status-text text-available">Sẵn sàng đón khách</span>
           </div>
-          
+
           <div *ngSwitchCase="'occupied'">
+            <!-- ✅ FIX Bug#3 trong rooms.html: Hiển thị tên khách đang active, không phải booking cuối -->
             <span class="guest-name">
-              {{ (room.bookings && room.bookings.length > 0) ? room.bookings[room.bookings.length - 1].customer?.fullName : 'Khách ẩn danh' }}
+              {{ getActiveBooking(room)?.customer?.fullName || 'Khách ẩn danh' }}
             </span>
             <span class="timer"><i class="far fa-clock"></i> Đang lưu trú</span>
           </div>

@@ -22,7 +22,9 @@ namespace API_QLKhachSan.Controllers
         {
             return await _context.Bookings
                 .Include(b => b.Room)
+                    .ThenInclude(r => r.RoomType)
                 .Include(b => b.Customer)
+                .OrderByDescending(b => b.CheckInTime)
                 .ToListAsync();
         }
         [HttpPost]
@@ -136,8 +138,17 @@ namespace API_QLKhachSan.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBooking(int id)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.BookingID == id);
+
             if (booking == null) return NotFound();
+
+            // Khi huỷ booking đang Occupied, giải phóng phòng về Available
+            if (booking.Room != null && booking.RoomStatus == "Occupied")
+            {
+                booking.Room.RoomStatus = "Available";
+            }
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();

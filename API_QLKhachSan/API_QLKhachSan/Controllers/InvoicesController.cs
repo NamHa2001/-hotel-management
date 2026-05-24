@@ -40,16 +40,17 @@ namespace API_QLKhachSan.Controllers
 
                 // 3. Cập nhật thông tin Check-out cho Booking
                 booking.CheckOutTime = DateTime.Now;
+                booking.RoomStatus = "đã thanh toán"; // ✅ FIX: Cập nhật trạng thái booking để Frontend nhận biết "Đã trả phòng"
+                booking.IsInspected = true;            // ✅ FIX: Đánh dấu đã hoàn tất kiểm phòng khi thanh toán xong
+                booking.TotalRoomPrice = invoice.RoomSubTotal; // ✅ FIX Bug#2: Ghi lại tiền phòng thực tế vào Booking để hiển thị đúng trong bảng Quản lý Đặt phòng
 
-                // Cập nhật ghi chú kiểm phòng cuối cùng từ hóa đơn vào Booking
+                // Ghi lại nhân viên thu tiền vào ghi chú kiểm phòng
                 if (!string.IsNullOrEmpty(invoice.StaffName))
                 {
                     booking.InspectionNote = $"Đã thanh toán - NV: {invoice.StaffName}";
                 }
-                // Giả sử bạn có trường IsInspected để đánh dấu đã kiểm phòng xong
-                // booking.IsInspected = true; 
 
-                // 4. Cập nhật trạng thái phòng (Ví dụ: 'Available' hoặc 'Cleaning')
+                // 4. Cập nhật trạng thái phòng sang "Cleaning" (chờ dọn dẹp)
                 if (booking.Room != null)
                 {
                     booking.Room.RoomStatus = "Cleaning";

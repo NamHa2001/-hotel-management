@@ -91,14 +91,17 @@ export class Service {
     return this.http.post(`${this.baseApiUrl}/Booking`, bookingData);
   }
 
+  updateBooking(id: number, bookingData: any): Observable<any> {
+    return this.http.put(`${this.baseApiUrl}/Booking/${id}`, bookingData);
+  }
+
   markInspected(bookingId: number, note: string): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.put(`${this.baseApiUrl}/Booking/MarkInspected/${bookingId}`, JSON.stringify(note), { headers });
   }
 
-  checkOut(bookingID: number): Observable<any> {
-    return this.http.put(`${this.baseApiUrl}/Booking/CheckOut/${bookingID}`, {});
-  }
+  // ✅ FIX Bug#5: Đã xóa phương thức checkOut() vì nó gọi endpoint PUT /Booking/CheckOut/{id}
+  // mà KHÔNG TỒN TẠI ở Backend. Checkout thực tế được thực hiện qua InvoiceService.processCheckOut().
 
   // --- QUẢN LÝ DỊCH VỤ (SERVICES) ---
   

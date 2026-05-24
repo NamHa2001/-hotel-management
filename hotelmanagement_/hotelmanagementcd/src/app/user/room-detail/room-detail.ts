@@ -89,7 +89,7 @@ export class RoomDetailComponent implements OnInit {
     const newCustomer: any = {
       fullName: this.bookingData.customerName,
       phoneNumber: this.bookingData.phoneNumber,
-      identityCard: ''
+      identityCard: null  // ✅ FIX Bug#4: Gửi null thay vì "" để tránh lỗi "CCCD đã tồn tại" cho khách thứ 2 trở đi
     };
     this.hotelService.addCustomer(newCustomer).subscribe({
       next: (created: any) => {

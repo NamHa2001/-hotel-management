@@ -10,8 +10,16 @@
         <aside class="filter-sidebar">
             <div class="filter-box">
                 <h4 class="filter-title"><i class="fa-solid fa-sliders"></i> Bộ lọc tìm kiếm</h4>
-                
-              
+
+                <!-- ✅ FIX Bug#18: Thêm bộ lọc theo loại phòng (filterType đã có sẵn trong TS nhưng thiếu UI) -->
+                <div class="filter-group">
+                    <label>Loại phòng</label>
+                    <select [(ngModel)]="filterType" (change)="applyFilter()">
+                        <option value="">Tất cả hạng phòng</option>
+                        <option *ngFor="let t of roomTypes" [value]="t.typeName">{{ t.typeName }}</option>
+                    </select>
+                </div>
+
                <!-- Lọc theo giá tiền (Range Slider) -->
                 <div class="filter-group">
                     <label>Giá tối đa: <span class="price-display">{{ filterPrice | number }}đ</span></label>
@@ -65,7 +73,9 @@
                             <button class="btn-detail" [routerLink]="['/user/room-detail', room?.roomID || room?.roomId || room?.RoomId]">
     XEM CHI TIẾT
                             </button>
-                            <button class="btn-book-now">
+                            <!-- ✅ FIX Bug#14: Thêm routerLink điều hướng vào form đặt phòng của chi tiết phòng -->
+                            <button class="btn-book-now"
+                              [routerLink]="['/user/room-detail', room?.roomID || room?.roomId || room?.RoomId]">
                                 ĐẶT NGAY
                             </button>
                         </div>

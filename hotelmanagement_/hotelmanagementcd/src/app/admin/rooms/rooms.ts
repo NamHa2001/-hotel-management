@@ -1,9 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Bổ sung để dùng ngModel cho form Sửa
-import { Service } from '../../service'; 
-import { Room, RoomType,Customer } from './room.model';    
+import { Service } from '../../service';
+import { Room, RoomType,Customer } from './room.model';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators'; // ✅ FIX Bug#20
 @Component({
   selector: 'app-rooms',
   standalone: true,
@@ -11,7 +13,8 @@ import { Router } from '@angular/router';
   templateUrl: './rooms.html',
   styleUrl: './rooms.css',
 })
-export class Rooms implements OnInit {
+export class Rooms implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>(); // ✅ FIX Bug#20
   roomsList: Room[] = [];
   roomTypes: RoomType[] = []; // Danh sách loại phòng để chọn khi Sửa
 
@@ -36,10 +39,18 @@ export class Rooms implements OnInit {
     this.refreshData();
     // Chú thích báo cáo: Đăng ký lắng nghe tín hiệu làm mới từ Service.
     // Khi trang Checkout báo đã thanh toán, trang này sẽ tự động chạy lại hàm loadRooms.
-    this.hotelService.refreshRooms$.subscribe(() => {
-      console.log('Nhận tín hiệu làm mới từ hệ thống...');
-      this.loadRooms();
-    });
+    // ✅ FIX Bug#20: Dùng takeUntil để unsubscribe khi component bị destroy (tránh memory leak)
+    this.hotelService.refreshRooms$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log('Nhận tín hiệu làm mới từ hệ thống...');
+        this.loadRooms();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // Tạo một hàm tổng hợp để làm mới toàn bộ dữ liệu trang
@@ -72,6 +83,15 @@ export class Rooms implements OnInit {
     });
   }
 
+  // ✅ FIX Bug#3: Helper lấy booking đang active (checkOutTime == null).
+  // Fallback về phần tử cuối để tránh crash nếu không tìm được active booking.
+  // Public vì được gọi từ template HTML.
+  getActiveBooking(room: Room): any | null {
+    if (!room?.bookings || room.bookings.length === 0) return null;
+    const active = room.bookings.slice().reverse().find((b: any) => !b.checkOutTime && !b.CheckOutTime);
+    return active ?? room.bookings[room.bookings.length - 1];
+  }
+
   // --- Hàm xử lý khi nhấn vào phòng ---
   onRoomClick(room: Room): void {
     this.selectedRoom = { ...room }; // Dùng spread operator để tạo bản sao, tránh sửa trực tiếp vào danh sách gốc khi chưa lưu
@@ -81,8 +101,8 @@ export class Rooms implements OnInit {
 
     if (this.checkStatus(room.roomStatus, 'occupied')) {
       if (room.bookings && room.bookings.length > 0) {
-        const currentBooking = room.bookings[room.bookings.length - 1];
-        console.log('Thông tin khách hàng:', currentBooking.customer?.fullName);
+        const currentBooking = this.getActiveBooking(room); // ✅ FIX Bug#3
+        console.log('Thông tin khách hàng:', currentBooking?.customer?.fullName);
       } else {
         console.log('Phòng báo bận nhưng chưa có dữ liệu Booking.');
       }
@@ -302,8 +322,8 @@ tempBooking: any = {
   onConfirmBooking() {
     // 1. Kiểm tra nếu là khách mới, phải tạo khách trước
     if (this.isNewCustomer) {
-      if (!this.tempCustomer.fullName || !this.tempCustomer.identityCard) {
-        alert('Vui lòng nhập đầy đủ Tên và CCCD cho khách hàng mới!');
+      if (!this.tempCustomer.fullName || !this.tempCustomer.phoneNumber) {
+        alert('Vui lòng nhập đầy đủ Tên và Số điện thoại cho khách hàng mới!');
         return;
       }
 
@@ -327,11 +347,16 @@ tempBooking: any = {
 
   // Hàm phụ để thực hiện gọi API Booking
   private executeBooking(customerId: number) {
+    // ✅ FIX Bug#2: Lấy giá phòng từ roomType để hiển thị trong cột "Tổng tiền"
+    // Đây là giá ước tính 1 đêm; sẽ được cập nhật chính xác sau khi checkout
+    const pricePerNight = this.selectedRoom?.roomType?.pricePerNight || 0;
+
     const bookingData = {
       roomID: this.selectedRoom?.roomID,
       customerID: customerId,
-      checkInTime: new Date().toISOString(), // Hoặc lấy từ tempBooking.checkInTime
-      roomStatus: 'Occupied'
+      checkInTime: this.tempBooking.checkInTime ? new Date(this.tempBooking.checkInTime).toISOString() : new Date().toISOString(),
+      roomStatus: 'Occupied',
+      totalRoomPrice: pricePerNight // ✅ FIX Bug#2: Giá ước tính 1 đêm (sẽ cập nhật khi checkout)
     };
 
     this.hotelService.createBooking(bookingData).subscribe({
@@ -423,31 +448,41 @@ tempBooking: any = {
     if (!this.selectedRoom || !newRoom.roomID) return;
 
     if (confirm(`Xác nhận đổi khách từ phòng ${this.selectedRoom.roomNumber} sang phòng ${newRoom.roomNumber}?`)) {
-      const currentBooking = this.selectedRoom.bookings?.[this.selectedRoom.bookings.length - 1];
+      const currentBooking = this.getActiveBooking(this.selectedRoom); // ✅ FIX Bug#3
       if (!currentBooking) return;
 
-      // Logic: Cập nhật roomID của Booking hiện tại sang ID phòng mới
-      // Chú ý: Tùy vào Backend của bạn, đây là ví dụ cập nhật thông qua Room Status
-      const updateData = {
-        ...newRoom,
-        roomStatus: 'Occupied',
-        // Gán booking hiện tại sang phòng mới (giữ nguyên thông tin khách)
-        bookings: [currentBooking] 
+      // Bước 1: Cập nhật roomID trong Booking sang phòng mới
+      // Chỉ gửi scalar fields, không gửi navigation objects (room/customer) để tránh EF conflict
+      const updatedBooking = {
+        bookingID: currentBooking.bookingID,
+        roomID: newRoom.roomID,
+        customerID: currentBooking.customerID,
+        checkInTime: currentBooking.checkInTime,
+        checkOutTime: currentBooking.checkOutTime,
+        roomStatus: currentBooking.roomStatus,
+        totalRoomPrice: currentBooking.totalRoomPrice,
+        isInspected: currentBooking.isInspected,
+        inspectionNote: currentBooking.inspectionNote
       };
 
-      this.hotelService.updateRoom(newRoom.roomID, updateData).subscribe({
+      this.hotelService.updateBooking(currentBooking.bookingID, updatedBooking).subscribe({
         next: () => {
-          // Sau khi phòng mới nhận khách, ta giải phóng phòng cũ về trạng thái Cleaning
-          if (this.selectedRoom?.roomID) {
-            const oldRoomUpdate = { ...this.selectedRoom, roomStatus: 'Cleaning', bookings: [] };
-            this.hotelService.updateRoom(this.selectedRoom.roomID, oldRoomUpdate).subscribe();
+          const oldRoomID = this.selectedRoom?.roomID;
+
+          // Bước 2: Đặt phòng cũ về Cleaning
+          if (oldRoomID) {
+            const oldRoomUpdate = { ...this.selectedRoom, roomStatus: 'Cleaning' };
+            this.hotelService.updateRoom(oldRoomID, oldRoomUpdate).subscribe();
           }
-          
+
+          // Bước 3: Đặt phòng mới thành Occupied
+          this.hotelService.updateRoom(newRoom.roomID!, { ...newRoom, roomStatus: 'Occupied' }).subscribe();
+
           alert('Đổi phòng thành công!');
           this.isChangingRoom = false;
           this.finishAction();
         },
-        error: (err) => alert('Lỗi khi thực hiện đổi phòng!')
+        error: () => alert('Lỗi khi thực hiện đổi phòng! Vui lòng thử lại.')
       });
     }
   }

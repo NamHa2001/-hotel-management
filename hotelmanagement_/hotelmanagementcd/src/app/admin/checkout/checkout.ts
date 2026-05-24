@@ -52,27 +52,14 @@ export class CheckoutComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.loadOccupiedRooms();
-
-      // Chú thích báo cáo: Lắng nghe tham số 'room' từ URL. 
-      // Nếu có, hệ thống tự động kích hoạt quy trình kiểm phòng cho số phòng tương ứng.
       this.route.queryParams.subscribe(params => {
-        const roomNum = params['room'];
-        if (roomNum) {
-          // Đợi 800ms để danh sách phòng kịp tải về từ API trước khi tìm kiếm
-          setTimeout(() => {
-            const targetRoom = this.occupiedRooms.find(r => r.roomNumber === roomNum);
-            if (targetRoom) {
-              console.log('Tự động mở phiếu kiểm phòng cho:', roomNum);
-              this.onCheckRoom(targetRoom);
-            }
-          }, 800);
-        }
+        const roomNum = params['room'] || null;
+        this.loadOccupiedRooms(roomNum);
       });
     }
   }
 
-  loadOccupiedRooms(): void {
+  loadOccupiedRooms(autoSelectRoom: string | null = null): void {
     this.hotelService.getRooms().subscribe({
       next: (data: Room[]) => {
         this.occupiedRooms = data.filter(r => {
@@ -80,14 +67,25 @@ export class CheckoutComponent implements OnInit {
           return status === 'occupied' || status === 'đang ở';
         });
         this.cdr.detectChanges();
+
+        // Auto-select sau khi dữ liệu đã về — không dùng setTimeout magic number
+        if (autoSelectRoom) {
+          const targetRoom = this.occupiedRooms.find(r => r.roomNumber === autoSelectRoom);
+          if (targetRoom) {
+            this.onCheckRoom(targetRoom);
+          }
+        }
       },
       error: (err) => console.error('Lỗi tải danh sách checkout:', err)
     });
   }
 
+  // ✅ FIX Bug#3: Tìm booking đang active (checkOutTime == null) thay vì luôn lấy phần tử cuối.
+  // Nếu không tìm được active booking thì fallback về phần tử cuối (tránh crash).
   private getCurrentBooking(room: Room): Booking | null {
     if (!room || !room.bookings || room.bookings.length === 0) return null;
-    return room.bookings[room.bookings.length - 1];
+    const active = room.bookings.slice().reverse().find((b: any) => !b.checkOutTime && !b.CheckOutTime);
+    return (active ?? room.bookings[room.bookings.length - 1]) as Booking;
   }
 
   // Chú thích: Kiểm tra trạng thái phòng để áp dụng màu sắc Badge hiện đại (SaaS Style)
@@ -269,7 +267,7 @@ export class CheckoutComponent implements OnInit {
       taxPercentage: 10,
       totalAmount: Number(finalPrice),
       paymentMethod: this.paymentMethod,
-      staffName: 'Ha Van Nam' 
+      staffName: this.hotelService.getUserInfo()?.fullName || this.hotelService.getUserInfo()?.userName || 'Admin'
     };
 
     // Thực thi lệnh lưu hóa đơn xuống Database

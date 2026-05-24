@@ -69,8 +69,8 @@ export class ServiceManagement implements OnInit {
  */
 get filteredServices() {
   if (!this.searchText) return this.services;
-  return this.services.filter(s => 
-    (s.serviceName || s.ServiceName).toLowerCase().includes(this.searchText.toLowerCase())
+  return this.services.filter(s =>
+    (s.serviceName || s.ServiceName || '').toLowerCase().includes(this.searchText.toLowerCase())
   );
 }
 

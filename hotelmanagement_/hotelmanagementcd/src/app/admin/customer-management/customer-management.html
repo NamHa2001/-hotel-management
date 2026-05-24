@@ -3,7 +3,7 @@
   <div class="archive-header">
     <div class="header-stamp">
       <h2 class="archive-title">Sổ Niên Giám Khách Lưu Trú</h2>
-      <p class="archive-subtitle">CINNAMON HOTEL - REGISTRATION LEDGER</p>
+      <p class="archive-subtitle">NAMHA HOTEL - REGISTRATION LEDGER</p>
       <button class="btn-add-ledger" (click)="onAddCustomer()">
       <i class="fas fa-user-plus"></i> Thêm hồ sơ mới
     </button>
@@ -128,7 +128,10 @@
           <td>Thanh toán dịch vụ & Tiền phòng</td>
           <td class="text-right font-bold">{{ inv.totalAmount | number }}</td>
         </tr>
-              <td colspan="4" class="text-center italic py-4">Chưa có dữ liệu giao dịch trong quá khứ.</td>
+              <!-- ✅ FIX Bug#6: Thêm *ngIf để chỉ hiện khi thực sự không có dữ liệu -->
+              <tr *ngIf="customerInvoices.length === 0">
+                <td colspan="4" class="text-center italic py-4">Chưa có dữ liệu giao dịch trong quá khứ.</td>
+              </tr>
           </tbody>
         </table>
       </div>

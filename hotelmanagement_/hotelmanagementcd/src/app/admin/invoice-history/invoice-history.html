@@ -7,7 +7,8 @@
         </div>
         <div class="quick-stats">
             <div class="stat-item">
-                <span class="label">Tổng doanh thu (tháng này)</span>
+                <!-- ✅ FIX Bug#12: Đổi nhãn đúng — hàm tính tổng theo danh sách đang lọc, không phải tháng này -->
+                <span class="label">Tổng doanh thu (đang lọc)</span>
                 <span class="value">{{ getTotalRevenue() | number }}đ</span>
             </div>
             <div class="stat-item">
@@ -94,22 +95,23 @@
     <td>{{ inv.staffName }}</td>
     <td>
         <button class="btn-view" (click)="viewDetail(inv.invoiceID)"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn-print"><i class="fa-solid fa-print"></i></button>
+        <!-- ✅ FIX Bug#10: Thêm (click) handler cho nút in -->
+        <button class="btn-print" (click)="printInvoice(inv.invoiceID)" title="In hóa đơn"><i class="fa-solid fa-print"></i></button>
     </td>
 </tr>
             </tbody>
         </table>
         
-        <!-- Phân trang -->
+        <!-- ✅ FIX Bug#9: Thay pagination giả bằng thông tin thực tế từ dữ liệu hiện tại -->
         <div class="pagination">
-            <span>Hiển thị 1 - 10 trên 150 hóa đơn</span>
-            <div class="pages">
-                <button disabled><i class="fas fa-chevron-left"></i></button>
-                <button class="active">1</button>
-                <button>2</button>
-                <button>3</button>
-                <button><i class="fas fa-chevron-right"></i></button>
-            </div>
+            <span>
+              Đang hiển thị <strong>{{ filteredInvoices.length }}</strong> /
+              {{ invoices.length }} hóa đơn
+              <span *ngIf="filteredInvoices.length < invoices.length"> (đã lọc)</span>
+            </span>
+            <button class="btn-reset-filter" *ngIf="filteredInvoices.length < invoices.length" (click)="resetFilter()">
+              <i class="fas fa-times"></i> Xóa bộ lọc
+            </button>
         </div>
     </section>
 
@@ -191,7 +193,8 @@
             </div>
 
             <div class="modal-footer">
-                <button class="btn-print-large"><i class="fa-solid fa-print"></i> In hóa đơn</button>
+                <!-- ✅ FIX Bug#10: Thêm (click) handler cho nút in trong modal -->
+                <button class="btn-print-large" (click)="printCurrentInvoice()"><i class="fa-solid fa-print"></i> In hóa đơn</button>
                 <button class="btn-close-modal" (click)="showDetailModal = false">Đóng cửa sổ</button>
             </div>
         </div>

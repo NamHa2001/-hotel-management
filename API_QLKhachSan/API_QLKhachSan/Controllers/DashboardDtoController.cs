@@ -50,14 +50,20 @@ namespace API_QLKhachSan.Controllers
                 LuotCheckInTuan = luotCheckInTuan,
                 DoanhThuThang = doanhThuThang
             };
-            // Lấy dữ liệu 7 ngày gần nhất
+            // ✅ FIX Bug#19: Tải toàn bộ invoice 7 ngày 1 lần, tránh N+1 query (7 query riêng lẻ)
+            var startOf7Days = DateTime.Today.AddDays(-6);
+            var invoiceLast7Days = await _context.Invoices
+                .Where(i => i.InvoiceDate.Date >= startOf7Days)
+                .Select(i => new { i.InvoiceDate, i.TotalAmount })
+                .ToListAsync();
+
             var last7Days = Enumerable.Range(0, 7)
                 .Select(i => DateTime.Today.AddDays(-6 + i))
                 .ToList();
 
             summary.RevenueLabels = last7Days.Select(d => d.ToString("dd/MM")).ToList();
             summary.RevenueValues = last7Days.Select(d =>
-                _context.Invoices
+                invoiceLast7Days
                     .Where(i => i.InvoiceDate.Date == d.Date)
                     .Sum(i => i.TotalAmount)
             ).ToList();

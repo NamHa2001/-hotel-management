@@ -55,10 +55,10 @@ export class CustomerManagement implements OnInit {
   get filteredCustomers() {
     if (!this.searchKey) return this.customers;
     const key = this.searchKey.toLowerCase();
-    return this.customers.filter(c => 
-      c.fullName.toLowerCase().includes(key) || 
-      c.phoneNumber.includes(key) || 
-      c.identityCard.includes(key)
+    return this.customers.filter(c =>
+      (c.fullName || '').toLowerCase().includes(key) ||
+      (c.phoneNumber || '').includes(key) ||
+      (c.identityCard || '').includes(key)
     );
   }
 

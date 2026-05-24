@@ -28,9 +28,11 @@ namespace API_QLKhachSan.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-            // Kiểm tra khách hàng đã tồn tại chưa dựa trên CMND/CCCD (IdentityCard)
-            // Thay vì check UserName như User, Customer nên check số giấy tờ tùy thân
-            if (_context.Customers.Any(c => c.IdentityCard == customer.IdentityCard))
+            // ✅ FIX Bug#4: Chỉ kiểm tra trùng CCCD khi giá trị thực sự được cung cấp.
+            // Nếu khách đặt phòng từ User side không có CCCD (null / rỗng) thì bỏ qua kiểm tra.
+            // Điều này tránh lỗi 400 "CCCD đã tồn tại" khi nhiều khách online đặt phòng mà không nhập CCCD.
+            if (!string.IsNullOrWhiteSpace(customer.IdentityCard)
+                && _context.Customers.Any(c => c.IdentityCard == customer.IdentityCard))
             {
                 return BadRequest(new { message = "Số CMND/CCCD đã tồn tại trong hệ thống" });
             }

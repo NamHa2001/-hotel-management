@@ -61,9 +61,9 @@
     <div class="card chart-card">
       <h4 class="card-title">Tỉ lệ sử dụng phòng</h4>
       <div class="chart-main-container">
-        <canvas *ngIf="isBrowser" baseChart 
-          [data]="roomUsageData" 
-          [options]="pieOptions" 
+        <canvas *ngIf="isBrowser" baseChart
+          [data]="roomUsageData"
+          [options]="pieOptions"
           [type]="'pie'">
         </canvas>
       </div>
@@ -96,6 +96,40 @@
             <span class="k-val">{{ stats?.phongDangDon || 0 }}</span>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ FIX Bug#11: Thêm 2 biểu đồ thực — Top dịch vụ & Phân bố thanh toán -->
+  <div class="charts-row">
+    <div class="card chart-card-wide">
+      <div class="card-header">
+        <h4 class="card-title"><i class="fas fa-concierge-bell"></i> Top 5 Dịch Vụ Doanh Thu</h4>
+        <span class="badge">Từ hóa đơn thực tế</span>
+      </div>
+      <div class="chart-main-container">
+        <canvas *ngIf="isBrowser" baseChart
+          [data]="serviceBarData"
+          [options]="barOptions"
+          [type]="'bar'">
+        </canvas>
+        <p *ngIf="!serviceBarData.labels?.length" class="chart-empty-msg">
+          <i class="fas fa-info-circle"></i> Chưa có dữ liệu dịch vụ
+        </p>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="card-header">
+        <h4 class="card-title"><i class="fas fa-credit-card"></i> Phương Thức Thanh Toán</h4>
+        <span class="badge">Từ hóa đơn thực tế</span>
+      </div>
+      <div class="chart-main-container">
+        <canvas *ngIf="isBrowser" baseChart
+          [data]="customerTypeData"
+          [options]="pieOptions"
+          [type]="'pie'">
+        </canvas>
       </div>
     </div>
   </div>
