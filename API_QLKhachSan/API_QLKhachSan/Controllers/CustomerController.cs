@@ -1,5 +1,6 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace API_QLKhachSan.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class CustomerController : ControllerBase
     {
         private readonly HotelContext _context;
@@ -26,6 +28,7 @@ namespace API_QLKhachSan.Controllers
 
         // Tạo Customer mới
         [HttpPost]
+        [AllowAnonymous] // ✅ FIX Bug#23: User đặt phòng cần tạo hồ sơ khách — không yêu cầu auth
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
             // ✅ FIX Bug#4: Chỉ kiểm tra trùng CCCD khi giá trị thực sự được cung cấp.
@@ -92,6 +95,7 @@ namespace API_QLKhachSan.Controllers
 
         // Tìm kiếm Customer (Mở rộng thêm tìm theo CMND và SĐT )
         [HttpGet("Search")]
+        [AllowAnonymous] // ✅ FIX Bug#23: User tìm khách theo SĐT khi đặt phòng — không yêu cầu auth
         public async Task<ActionResult<IEnumerable<object>>> SearchCustomer(
              [FromQuery] int? id,
              [FromQuery] string? fullname,

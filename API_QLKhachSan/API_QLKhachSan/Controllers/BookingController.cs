@@ -1,5 +1,6 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace API_QLKhachSan.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class BookingController : ControllerBase
     {
         private readonly HotelContext _context;
@@ -28,6 +30,7 @@ namespace API_QLKhachSan.Controllers
                 .ToListAsync();
         }
         [HttpPost]
+        [AllowAnonymous] // ✅ FIX Bug#23: User đặt phòng không cần đăng nhập
         public async Task<ActionResult<Booking>> PostBooking([FromBody] Booking newBooking)
         {
             // 0. Kiểm tra nếu dữ liệu gửi lên bị null

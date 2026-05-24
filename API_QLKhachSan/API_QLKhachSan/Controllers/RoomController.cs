@@ -1,5 +1,6 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace API_QLKhachSan.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class RoomController : ControllerBase
     {
         private readonly HotelContext _context;
@@ -20,6 +22,7 @@ namespace API_QLKhachSan.Controllers
         // 1. Lấy danh sách tất cả phòng (Kèm theo tên loại phòng cho dễ nhìn)
         // 1. Lấy danh sách tất cả phòng (Kèm Loại phòng và Lịch sử đặt)
         [HttpGet]
+        [AllowAnonymous] // ✅ FIX Bug#23: Cho phép User browsing không cần đăng nhập
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
         {
             return await _context.Rooms
@@ -30,6 +33,7 @@ namespace API_QLKhachSan.Controllers
         }
         // 2. Lấy chi tiết 1 phòng (Kèm Loại phòng và Lịch sử đặt)
         [HttpGet("{id}")]
+        [AllowAnonymous] // ✅ FIX Bug#23: Cho phép User xem chi tiết phòng không cần đăng nhập
         public async Task<ActionResult<Room>> GetRoom(int id)
         {
             var room = await _context.Rooms

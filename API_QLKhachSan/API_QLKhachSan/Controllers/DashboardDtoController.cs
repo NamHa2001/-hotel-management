@@ -1,13 +1,15 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_QLKhachSan.Controllers
 {
-    [Route("api/Dashboard")] // Sửa lại Route cho ngắn gọn và dễ gọi
+    [Route("api/Dashboard")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class DashboardDtoController : ControllerBase
     {
         private readonly HotelContext _context;

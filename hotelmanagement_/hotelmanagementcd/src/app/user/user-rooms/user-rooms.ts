@@ -59,11 +59,14 @@ export class UserRooms implements OnInit {
       const type = (room.roomType?.typeName || '').toString().toLowerCase();
       const selected = (this.filterType || '').toString().toLowerCase();
       const price = room.roomType?.pricePerNight || 0;
+      const status = (room.roomStatus || '').toLowerCase();
 
       const matchType = selected ? type.includes(selected) : true;
       const matchPrice = price <= this.filterPrice;
+      // ✅ FIX Bug#15: Chỉ hiển thị phòng trống (Available) — loại bỏ Occupied/Cleaning
+      const matchStatus = status === 'available' || status === 'trống';
 
-      return matchType && matchPrice;
+      return matchType && matchPrice && matchStatus;
     });
   }
 

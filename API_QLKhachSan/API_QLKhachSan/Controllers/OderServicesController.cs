@@ -1,5 +1,6 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace API_QLKhachSan.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class OderServicesController : ControllerBase
     {
         private readonly HotelContext _context;

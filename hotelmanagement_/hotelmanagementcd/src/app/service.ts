@@ -70,6 +70,11 @@ export class Service {
     return this.http.get<Room[]>(`${this.baseApiUrl}/Room`);
   }
 
+  // ✅ FIX Bug#20: Lấy 1 phòng theo ID thay vì tải toàn bộ danh sách để tối ưu hiệu năng
+  getRoomById(id: number): Observable<Room> {
+    return this.http.get<Room>(`${this.baseApiUrl}/Room/${id}`);
+  }
+
   addRoom(roomData: Partial<Room>): Observable<any> {
     return this.http.post(`${this.baseApiUrl}/Room`, roomData);
   }

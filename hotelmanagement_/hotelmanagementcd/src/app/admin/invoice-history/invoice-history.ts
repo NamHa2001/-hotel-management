@@ -105,14 +105,45 @@ export class InvoiceHistory implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Báo cáo: Hàm giả lập xuất dữ liệu ra Excel (Có thể phát triển thêm thư viện xlsx sau này)
+  // ✅ FIX Bug#16: Xuất thực tế danh sách hóa đơn ra file CSV (mở được bằng Excel)
   exportToExcel(): void {
     if (this.filteredInvoices.length === 0) {
-      alert('Không có dữ dữ liệu để xuất báo cáo!');
+      alert('Không có dữ liệu để xuất báo cáo!');
       return;
     }
-    console.log('Đang xuất danh sách hóa đơn ra Excel...');
-    alert('Hệ thống đang khởi tạo file báo cáo cho ' + this.filteredInvoices.length + ' hóa đơn.');
+
+    // Header hàng tiêu đề (dùng dấu ; để Excel Việt Nam tự tách cột)
+    const headers = ['Mã HĐ', 'Ngày lập', 'Khách hàng', 'Phòng', 'PT Thanh Toán', 'Tiền phòng', 'Tiền DV', 'Tổng tiền'];
+
+    // Map dữ liệu sang mảng giá trị, escape dấu phẩy trong chuỗi
+    const rows = this.filteredInvoices.map(inv => [
+      inv.invoiceID ?? '',
+      inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString('vi-VN') : '',
+      (inv.booking?.customer?.fullName || 'Khách vãng lai').replace(/,/g, ' '),
+      inv.booking?.room?.roomNumber ?? '',
+      inv.paymentMethod ?? '',
+      inv.roomSubTotal ?? 0,
+      inv.serviceSubTotal ?? 0,
+      inv.totalAmount ?? 0
+    ]);
+
+    // Thêm hàng tổng cộng ở cuối
+    const totalAmount = this.filteredInvoices.reduce((s, i) => s + (i.totalAmount || 0), 0);
+    rows.push(['', '', '', '', 'TỔNG CỘNG', '', '', totalAmount]);
+
+    // Ghép nội dung CSV — dùng tab (\t) để Excel Windows nhận đúng
+    const csvContent = '﻿' // BOM UTF-8 để Excel hiển thị tiếng Việt đúng
+      + [headers, ...rows].map(r => r.join('\t')).join('\n');
+
+    // Tạo Blob và trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+    link.href = url;
+    link.download = `HoaDon_${today}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   // ✅ FIX Bug#10: Tải chi tiết hóa đơn rồi in (mở cửa sổ in của trình duyệt)

@@ -14,6 +14,7 @@ import { Layout as UserLayout } from './user/layout/layout';
 import { Dashboard as UserDashboard } from './user/dashboard/dashboard';
 import { UserRooms } from './user/user-rooms/user-rooms';
 import { RoomDetailComponent as UserRoomDetail } from './user/room-detail/room-detail';
+import { authGuard } from './auth.guard'; // ✅ FIX Bug#24: Import AuthGuard bảo vệ route Admin
 export const routes: Routes = [
   // 1. Điều hướng mặc định khi mở app
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -21,10 +22,11 @@ export const routes: Routes = [
   // 2. Trang Login riêng biệt
   { path: 'login', component: LoginApp },
 
-  // 3. Cụm Route dành cho Admin (Layout Parent)
+  // 3. Cụm Route dành cho Admin (Layout Parent) — ✅ FIX Bug#24: Bảo vệ bằng AuthGuard
   {
     path: 'admin',
-    component: AdminComponent, 
+    component: AdminComponent,
+    canActivate: [authGuard], // ✅ FIX Bug#24: Chỉ cho phép vào khi đã đăng nhập
     children: [
       // Mặc định khi vào /admin sẽ tự chuyển sang dashboard
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

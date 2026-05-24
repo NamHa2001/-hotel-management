@@ -38,27 +38,28 @@ export class RoomDetailComponent implements OnInit {
     this.loadRoomDetail();
   }
 
- loadRoomDetail() {
-    this.hotelService.getRoomTypes().subscribe(types => {
-      const allTypes: any[] = types;
-      
-      this.hotelService.getRooms().subscribe(rooms => {
-        const allRooms: any[] = rooms;
-        // Chú thích báo cáo: Tìm phòng bằng cách thử cả roomID và roomId để đảm bảo khớp với dữ liệu thực tế từ API.
-        const foundRoom = allRooms.find(r => (r.roomID || r.roomId) == this.roomId);
-        
-        if (foundRoom) {
-          const type = allTypes.find(t => (t.roomTypeID || t.roomTypeid) == foundRoom.roomTypeID);
-          this.room = {
-            ...foundRoom,
-            roomID: foundRoom.roomID || foundRoom.roomId,
-            roomType: type
-          };
-        } else {
-          this.room = { roomID: -1 };
-        }
+ // ✅ FIX Bug#20: Gọi trực tiếp getRoomById thay vì tải toàn bộ danh sách phòng
+  loadRoomDetail() {
+    const id = Number(this.roomId);
+    if (!id || id <= 0) {
+      this.room = { roomID: -1 };
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.hotelService.getRoomById(id).subscribe({
+      next: (foundRoom: any) => {
+        // Backend trả về room kèm roomType (ThenInclude) — dùng trực tiếp
+        this.room = {
+          ...foundRoom,
+          roomID: foundRoom.roomID || foundRoom.roomId
+        };
         this.cdr.detectChanges();
-      });
+      },
+      error: () => {
+        this.room = { roomID: -1 };
+        this.cdr.detectChanges();
+      }
     });
   }
 

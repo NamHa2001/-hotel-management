@@ -1,5 +1,6 @@
 ﻿using API_QLKhachSan.Data;
 using API_QLKhachSan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace API_QLKhachSan.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // ✅ FIX Bug#23: Bảo vệ toàn bộ controller
     public class RoomTypeController : ControllerBase
     {
         private readonly HotelContext _context;
@@ -19,6 +21,7 @@ namespace API_QLKhachSan.Controllers
 
         // 1. Lấy danh sách tất cả loại phòng
         [HttpGet]
+        [AllowAnonymous] // ✅ FIX Bug#23: Cho phép User filter phòng không cần đăng nhập
         public async Task<ActionResult<IEnumerable<Roomtype>>> GetRoomTypess()
         {
             return await _context.RoomTypes.ToListAsync();
@@ -26,6 +29,7 @@ namespace API_QLKhachSan.Controllers
 
         // 2. Lấy 1 loại phòng theo ID
         [HttpGet("{id}")]
+        [AllowAnonymous] // ✅ FIX Bug#23: Cho phép User xem loại phòng không cần đăng nhập
         public async Task<ActionResult<Roomtype>> GetRoomTypeById(int id)
         {
             var roomType = await _context.RoomTypes.FindAsync(id);
