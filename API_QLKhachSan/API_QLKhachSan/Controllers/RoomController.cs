@@ -85,7 +85,7 @@ namespace API_QLKhachSan.Controllers
 
         // 4. Cập nhật phòng
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRoom(int id, RoomCreateDto roomDto) // <--- Đổi sang dùng DTO cho đồng bộ
+        public async Task<IActionResult> PutRoom(int id, RoomCreateDto roomDto)
         {
             var room = await _context.Rooms.FindAsync(id);
             if (room == null) return NotFound();
@@ -94,6 +94,21 @@ namespace API_QLKhachSan.Controllers
             if (!await _context.RoomTypes.AnyAsync(rt => rt.RoomTypeID == roomDto.RoomTypeID))
             {
                 return BadRequest(new { message = "Mã loại phòng không tồn tại!" });
+            }
+
+            // ✅ FIX: Khi phòng được reset thủ công về trạng thái không phải Occupied
+            // (ví dụ admin dùng form Edit chứ không qua Checkout), tự động đóng các
+            // booking "mồ côi" còn sót lại để tránh chúng tái hiện khi phòng được đặt lại.
+            if (roomDto.RoomStatus != "Occupied" && room.RoomStatus == "Occupied")
+            {
+                var orphanedBookings = await _context.Bookings
+                    .Where(b => b.RoomID == id && b.CheckOutTime == null && b.RoomStatus == "Occupied")
+                    .ToListAsync();
+
+                foreach (var b in orphanedBookings)
+                {
+                    b.RoomStatus = "Cancelled"; // Đánh dấu bị hủy do reset thủ công
+                }
             }
 
             // Cập nhật từng trường một (Cách này cực kỳ an toàn, không lo lỗi vòng lặp)

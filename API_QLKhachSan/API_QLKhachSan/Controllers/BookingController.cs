@@ -61,16 +61,27 @@ namespace API_QLKhachSan.Controllers
 
             try
             {
-                // 4. CẬP NHẬT TRẠNG THÁI PHÒNG: Đây là bước quan trọng nhất
+                // 4. ✅ FIX: Tự động đóng booking "mồ côi" cũ cho phòng này trước khi tạo mới.
+                // Xảy ra khi admin đã reset phòng thủ công (không qua Checkout), các booking cũ
+                // vẫn còn roomStatus='Occupied' nhưng không có checkOutTime.
+                var orphanedBookings = await _context.Bookings
+                    .Where(b => b.RoomID == newBooking.RoomID && b.CheckOutTime == null && b.RoomStatus == "Occupied")
+                    .ToListAsync();
+                foreach (var b in orphanedBookings)
+                {
+                    b.RoomStatus = "Cancelled";
+                }
+
+                // 5. CẬP NHẬT TRẠNG THÁI PHÒNG: Đây là bước quan trọng nhất
                 room.RoomStatus = "Occupied";
 
-                // 5. Lưu thông tin đặt phòng vào Database
+                // 6. Lưu thông tin đặt phòng vào Database
                 _context.Bookings.Add(newBooking);
 
-                // SaveChanges sẽ lưu cả Booking mới VÀ trạng thái mới của Room
+                // SaveChanges sẽ lưu cả Booking mới VÀ trạng thái mới của Room VÀ các booking cũ đã đóng
                 await _context.SaveChangesAsync();
 
-                // 6. Trả về kết quả
+                // 7. Trả về kết quả
                 return CreatedAtAction(nameof(GetBookings), new { id = newBooking.BookingID }, newBooking);
             }
             catch (Exception ex)

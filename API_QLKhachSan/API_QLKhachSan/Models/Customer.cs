@@ -9,7 +9,7 @@ namespace API_QLKhachSan.Models
         [Key] // đánh dấu khóa chính
         public int CustomerID { get; set; }
         public string FullName { get; set; }
-        public string IdentityCard { get; set; }
+        public string? IdentityCard { get; set; } // ✅ FIX: Nullable — user đặt phòng không cần nhập CCCD
         public string? PhoneNumber { get; set; }
 
         [JsonIgnore] // Tránh lỗi vòng lặp khi trả về JSON nếu bạn chưa cấu hình ở Program.cs

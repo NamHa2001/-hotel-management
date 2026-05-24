@@ -90,7 +90,8 @@ export class RoomDetailComponent implements OnInit {
     const newCustomer: any = {
       fullName: this.bookingData.customerName,
       phoneNumber: this.bookingData.phoneNumber,
-      identityCard: null  // ✅ FIX Bug#4: Gửi null thay vì "" để tránh lỗi "CCCD đã tồn tại" cho khách thứ 2 trở đi
+      identityCard: ''  // ✅ FIX: Dùng '' thay vì null để tránh lỗi NOT NULL constraint trong DB.
+                        // Backend dùng IsNullOrWhiteSpace('') = true → bỏ qua check trùng CCCD → an toàn.
     };
     this.hotelService.addCustomer(newCustomer).subscribe({
       next: (created: any) => {

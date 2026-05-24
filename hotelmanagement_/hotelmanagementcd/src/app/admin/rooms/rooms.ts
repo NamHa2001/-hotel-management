@@ -240,6 +240,7 @@ isBookingMode: boolean = false; // Đang ở chế độ nhập thông tin đặ
 customerSearchQuery: string = ''; // Nội dung nhập vào để tìm khách (SĐT hoặc CCCD)
 foundCustomer: Customer | null = null; // Lưu khách hàng tìm thấy từ DB
 isNewCustomer: boolean = false; // Đánh dấu nếu đây là khách mới hoàn toàn
+isBookingLoading: boolean = false; // ✅ FIX: Chặn double-click nút Xác nhận Check-in
 // --- TRẠNG THÁI CHO ĐỔI PHÒNG ---
   isChangingRoom: boolean = false; // Trạng thái đang chọn phòng để đổi
   availableRoomsForChange: Room[] = []; // Danh sách các phòng trống khả dụng để đổi sang
@@ -296,13 +297,17 @@ tempBooking: any = {
       },
       error: (err: any) => {
         console.error('Lỗi API Search:', err);
-        this.isNewCustomer = true; // Lỗi thì cho nhập mới
+        this.foundCustomer = null; // ✅ FIX Bug: Reset foundCustomer để tránh hiện 2 người cùng lúc
+        this.isNewCustomer = true;
       }
     });
   }
 
   // Hàm xử lý khi nhấn nút "Xác nhận Đặt phòng"
   onConfirmBooking() {
+    // ✅ FIX: Chặn double-click — nếu đang xử lý thì bỏ qua
+    if (this.isBookingLoading) return;
+
     // 1. Kiểm tra nếu là khách mới, phải tạo khách trước
     if (this.isNewCustomer) {
       if (!this.tempCustomer.fullName || !this.tempCustomer.phoneNumber) {
@@ -310,11 +315,15 @@ tempBooking: any = {
         return;
       }
 
+      this.isBookingLoading = true; // ✅ FIX: Khóa nút ngay khi bắt đầu
       this.hotelService.addCustomer(this.tempCustomer).subscribe({
         next: (createdCustomer) => {
           this.executeBooking(createdCustomer.customerID);
         },
-        error: (err) => alert('Lỗi khi tạo khách hàng: ' + err.error?.message)
+        error: (err) => {
+          this.isBookingLoading = false; // ✅ FIX: Mở khóa khi có lỗi
+          alert('Lỗi khi tạo khách hàng: ' + err.error?.message);
+        }
       });
     } else {
       // 2. Nếu là khách cũ, đã có ID từ lúc Search
@@ -322,6 +331,7 @@ tempBooking: any = {
         alert('Vui lòng tìm kiếm khách hàng trước!');
         return;
       }
+      this.isBookingLoading = true; // ✅ FIX: Khóa nút
       this.executeBooking(this.tempBooking.customerID);
     }
   }
@@ -342,11 +352,15 @@ tempBooking: any = {
 
     this.hotelService.createBooking(bookingData).subscribe({
       next: (res) => {
+        this.isBookingLoading = false; // ✅ FIX: Mở khóa sau khi thành công
         alert('Đặt phòng thành công!');
         this.resetBookingForm();
         this.loadRooms(); // Tải lại sơ đồ phòng để thấy màu đỏ (Occupied)
       },
-      error: (err) => alert('Lỗi khi đặt phòng: ' + err.error?.message)
+      error: (err) => {
+        this.isBookingLoading = false; // ✅ FIX: Mở khóa khi có lỗi
+        alert('Lỗi khi đặt phòng: ' + err.error?.message);
+      }
     });
   }
 
@@ -357,6 +371,7 @@ tempBooking: any = {
     this.foundCustomer = null;
     this.customerSearchQuery = '';
     this.isNewCustomer = false;
+    this.isBookingLoading = false; // ✅ FIX: Reset loading state
   }
 
   // Hàm xử lý khi nhấn vào "Xem chi tiết / Gọi dịch vụ"

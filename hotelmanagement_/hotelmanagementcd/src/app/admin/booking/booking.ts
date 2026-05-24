@@ -90,17 +90,29 @@ export class BookingManagement implements OnInit, OnDestroy {
     this.filteredBookings = result;
   }
 
-  // Đang ở = booking Occupied + phòng thực tế vẫn Occupied + đã qua giờ nhận phòng
-  // Cross-reference room.roomStatus để loại bỏ các booking cũ "mồ côi" (phòng đã reset thủ công mà không qua checkout)
-  // ✅ FIX Bug#1: Thêm && !b.checkOutTime để booking đã checkout không còn hiện ở tab "Đang ở"
+  // ✅ FIX: Chỉ coi booking là "Đang ở" nếu nó là booking MỚI NHẤT (theo checkInTime)
+  // cho phòng đó, tránh booking cũ "mồ côi" (không qua checkout) tái hiện khi phòng được đặt lại.
   isOccupied(b: any): boolean {
     const bookingStatus = (b.roomStatus || '').toLowerCase();
     const roomStatus = (b.room?.roomStatus || '').toLowerCase();
     const checkIn = new Date(b.checkInTime);
-    return bookingStatus === 'occupied'
-      && roomStatus === 'occupied'
-      && checkIn <= new Date()
-      && !b.checkOutTime; // ✅ FIX: Booking đã checkout (có checkOutTime) không còn "Đang ở"
+
+    // Điều kiện cơ bản
+    if (!(bookingStatus === 'occupied' && roomStatus === 'occupied' && checkIn <= new Date() && !b.checkOutTime)) {
+      return false;
+    }
+
+    // ✅ FIX gốc rễ: Trong tất cả booking còn active của cùng phòng, chỉ booking MỚI NHẤT mới là "Đang ở"
+    const roomId = b.room?.roomID;
+    const latestActive = this.allBookings
+      .filter(x =>
+        x.room?.roomID === roomId &&
+        !x.checkOutTime &&
+        (x.roomStatus || '').toLowerCase() === 'occupied'
+      )
+      .sort((a: any, x: any) => new Date(x.checkInTime).getTime() - new Date(a.checkInTime).getTime())[0];
+
+    return latestActive?.bookingID === b.bookingID;
   }
 
   // ✅ FIX Bug#1: Thêm || !!b.checkOutTime làm fallback — nếu roomStatus chưa cập nhật kịp nhưng

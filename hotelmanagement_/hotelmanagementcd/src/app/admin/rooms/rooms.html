@@ -221,8 +221,10 @@
               <label class="info-label">Giờ nhận phòng:</label>
               <input type="datetime-local" [(ngModel)]="tempBooking.checkInTime" class="form-control">
             </div>
-            <button class="btn-confirm-booking" (click)="onConfirmBooking()">
-              Xác nhận Check-in <i class="fas fa-check"></i>
+            <!-- ✅ FIX: Disable khi đang xử lý để chặn double-click tạo 2 booking -->
+            <button class="btn-confirm-booking" (click)="onConfirmBooking()" [disabled]="isBookingLoading">
+              <ng-container *ngIf="!isBookingLoading">Xác nhận Check-in <i class="fas fa-check"></i></ng-container>
+              <ng-container *ngIf="isBookingLoading"><i class="fas fa-spinner fa-spin"></i> Đang xử lý...</ng-container>
             </button>
           </div>
         </div>
