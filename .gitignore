@@ -48,3 +48,9 @@ PROJECT_SUMMARY.md
 
 # AI tooling config - khong commit
 **/.vscode/mcp.json
+
+# Build output - khong commit
+API_QLKhachSan/API_QLKhachSan/publish/
+API_QLKhachSan/API_QLKhachSan/publish_fix/
+**/publish/
+**/publish_fix/
